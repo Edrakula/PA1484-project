@@ -7,10 +7,11 @@
 #include <LilyGo_AMOLED.h>
 #include <LV_Helper.h>
 #include <lvgl.h>
+#include "apiconnections.hpp"
 
 // Wi-Fi credentials (Delete these before commiting to GitHub) hthth
 static const char* WIFI_SSID     = "SSID";
-static const char* WIFI_PASSWORD = "PWD";
+static const char* WIFI_PASSWORD = "PASSWORD";
 
 LilyGo_Class amoled;
 
@@ -89,6 +90,8 @@ static void connect_wifi() {
   }
 }
 
+std::vector<ForecastTemp> forecastTemps;
+
 // Must have function: Setup is run once on startup
 void setup() {
   Serial.begin(115200);
@@ -103,6 +106,13 @@ void setup() {
 
   create_ui();
   connect_wifi();
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Error err;
+    forecastTemps = getForecastFromLongAndLat(LONGITUDE, LATITUDE, err);
+
+    lv_label_set_text(t1_label, (forecastTemps[0].temp + " " + forecastTemps[0].tempUnit).c_str());
+  }
 }
 
 // Must have function: Loop runs continously on device after setup
