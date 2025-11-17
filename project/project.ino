@@ -56,13 +56,13 @@ static void create_ui() {
   
   t1 = lv_tileview_add_tile(tileview, 1, 0, LV_DIR_HOR);
   t2 = lv_tileview_add_tile(tileview, 2, 0, LV_DIR_HOR);
-  bootScreen = lv_tileview_add_tile(tileview, 0,0, LV_DIR_VER);
+  bootScreen = lv_tileview_add_tile(tileview, 0,0, LV_DIR_HOR);
 
   // BOOT SCREEN
   {
-    String version_label = "Version: " + VERSION + "/n Group 10";
+    String version_label = "Version: " + VERSION + "\n Group 10";
     bootScreenLabel1 = lv_label_create(bootScreen);
-    lv_label_set_text(bootScreenLabel1, version_label.c_str())
+    lv_label_set_text(bootScreenLabel1, version_label.c_str());
     
   }
 
