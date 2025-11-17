@@ -18,6 +18,10 @@ LilyGo_Class amoled;
 static lv_obj_t* tileview;
 static lv_obj_t* t1;
 static lv_obj_t* t2;
+
+static lv_obj_t* bootScreen;
+static lv_obj_t* bootScreenLabel1;
+
 static lv_obj_t* t1_label;
 static lv_obj_t* t2_label;
 static bool t2_dark = false;  // start tile #2 in light mode
@@ -46,8 +50,16 @@ static void create_ui() {
   lv_obj_set_scrollbar_mode(tileview, LV_SCROLLBAR_MODE_OFF);
 
   // Add two horizontal tiles
-  t1 = lv_tileview_add_tile(tileview, 0, 0, LV_DIR_HOR);
-  t2 = lv_tileview_add_tile(tileview, 1, 0, LV_DIR_HOR);
+  
+  t1 = lv_tileview_add_tile(tileview, 1, 0, LV_DIR_HOR);
+  t2 = lv_tileview_add_tile(tileview, 2, 0, LV_DIR_HOR);
+  bootScreen = lv_tileview_add_tile(tileview, 0,0, LV_DIR_VER);
+
+  // BOOT SCREEN
+  {
+    bootScreenLabel1 = lv_label_create(bootScreen);
+    
+  }
 
   // Tile #1
   {
