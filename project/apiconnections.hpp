@@ -13,27 +13,78 @@
 
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
+#include <LilyGo_AMOLED.h>
 
+const std::string STATION_ID = "65090";
 const std::string LONGITUDE = "15.586710";
 const std::string LATITUDE = "56.160820";
 
-std::string makeRequest(std::string url, Error& err) {
-	HTTPClient http;
-	http.begin(url.c_str());
-	int responseCode = http.GET();
-    
-	if (responseCode > 0) {
-		std::string payload = http.getString().c_str();
-		return payload;
-	}
-	err.msg = "Error: could not make request";
-	return "";
+std::string makeRequest(const std::string& url, Error& err) {
+    HTTPClient http;
+    if (!http.begin(url.c_str())) {
+        err.msg = "Failed to initialize HTTP client for URL: " + url;
+        return "";
+    }
+
+    int responseCode = http.GET();
+    if (responseCode <= 0) {
+        err.msg = "HTTP error: " + std::to_string(responseCode) +
+                  " (" + http.errorToString(responseCode).c_str() + ")";
+        return "";
+    }
+
+    WiFiClient* stream = http.getStreamPtr();
+    std::string payload;
+
+	if ((char)stream->peek() == '{') {
+		const size_t bufferSize = 512;
+		uint8_t buffer[bufferSize];
+
+		while (true) {
+    		size_t len = stream->readBytes(buffer, bufferSize);
+    		if (len == 0) break;     // no more data
+    		payload.append((char*)buffer, len);
+		}
+	} else while (http.connected()) {
+        // 1. Read chunk length line
+        String lenStr = stream->readStringUntil('\n');
+        lenStr.trim();
+        if (lenStr.length() == 0) continue;
+
+        // chunk length is hex
+        int chunkSize = (int) strtol(lenStr.c_str(), NULL, 16);
+        if (chunkSize == 0) {
+            break;  // done
+        }
+
+        // 2. Read the exact number of bytes in the chunk
+        payload.reserve(payload.size() + chunkSize);
+        while (chunkSize > 0) {
+            if (!stream->available()) {
+                delay(1);
+                continue;
+            }
+
+            uint8_t buffer[256];
+            int n = stream->read(buffer, min(chunkSize, (int)sizeof(buffer)));
+            if (n > 0) {
+                payload.append((char*)buffer, n);
+                chunkSize -= n;
+            }
+        }
+
+        // 3. Read the trailing CRLF
+        stream->read(); // '\r'
+        stream->read(); // '\n'
+    }
+
+    return payload;
 }
 
 void dezerializeJson(JsonDocument& doc, const std::string& payload, Error& err) {
 	DeserializationError error = deserializeJson(doc, payload);
 	if (error) {
-		err.msg = "deserializeJson() failed: " + std::string(error.c_str()) + "\n";
+		err.msg = "deserializeJson() failed: " + std::string(error.c_str()) + "\n" + payload.substr(0,32);
 	}
 }
 
@@ -59,23 +110,27 @@ std::vector<std::pair<std::string, std::string>> getAllStations(Error& err) {
 	return out;
 }
 
-
-struct HistoricTemp {
+struct HistoricData {
 	Date date;
-	std::string temp;
+	std::string data;
 	std::string unit;
 };
 
-std::vector<HistoricTemp> getHistoricTempFromId(std::string id, Error& err) {
+enum HistoricDataParameters { HISTORIC_TEMP = 1, HISTORIC_RAIN_AMOUNT = 5, HISTORIC_WIND_SPEED = 4, HISTORIC_HUMIDITY = 6 };
+
+std::vector<HistoricData> getHistoricDataFromId(std::string id, int parameter, Error& err) {
 	std::string payload =
-	    makeRequest("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/1/station/" + id +
-	                    "/period/latest-months/data.json",
+	    makeRequest("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/" +
+	                    std::to_string(parameter) + "/station/" + id + "/period/latest-months/data.json",
 	                err);
 	if (err) {
 		return {};
 	}
-
+	
 	JsonDocument doc;
+	#ifdef DEBUG
+	Serial.println((String)payload.c_str());
+	#endif
 	dezerializeJson(doc, payload, err);
 	if (err) {
 		return {};
@@ -83,72 +138,114 @@ std::vector<HistoricTemp> getHistoricTempFromId(std::string id, Error& err) {
 
 	const char* parameterUnit = doc["parameter"]["unit"];
 
-	std::vector<HistoricTemp> out = {};
+	std::vector<HistoricData> out = {};
 
 	JsonArray values = doc["value"];
-	for (size_t i = 0; i < values.size(); i++) {
-		HistoricTemp temp;
-		temp.temp = values[i]["value"].as<std::string>();
-		temp.unit = parameterUnit;
-		time_t unixTime = values[i]["date"];
-		temp.date = unixToDate(unixTime);
-		if (temp.date.hour == 12) out.push_back(temp);
-	}
 
+	size_t valuesAmount = values.size();
+
+	for (size_t i = 0; i < valuesAmount; i++) {
+		if (valuesAmount > 200 && i == 0) i = 11;
+		HistoricData data;
+		data.data = values[i]["value"].as<std::string>();
+		data.unit = parameterUnit;
+		uint64_t unixTime = values[i]["date"].as<uint64_t>();
+		if (unixTime) {
+			data.date = unixToDate(unixTime);
+		} else {
+			data.date = ShortDateParser(values[i]["ref"], err);
+		}
+		out.push_back(data);
+		if (valuesAmount > 200) i += 23;
+	}
+	
 	return out;
 }
 
-std::vector<HistoricTemp> getHistoricTempFromId(int id, Error& err) {
-	return getHistoricTempFromId(std::to_string(id), err);
+std::vector<HistoricData> getHistoricDataFromId(int id, int parameter, Error& err) {
+	return getHistoricDataFromId(std::to_string(id), parameter, err);
 }
+
 
 struct ForecastTemp {
 	Date date;
-	std::string temp;
-	std::string tempUnit = "Cel";
+	float temp;
+	const char* tempUnit = "Cel";
 
-	std::string windSpeed;
-	std::string windSpeedUnit = "m/s";
-	std::string windDirection;
-	std::string windDirecitonUnit = "degree";
+	float windSpeed;
+	const char* windSpeedUnit = "m/s";
+	float windDirection;
+	const char* windDirectionUnit = "degree";
 
-	std::string precipitationMean;
-	std::string precipitationMeanUnit = "kg/m^2";
+	float precipitationMean;
+	const char* precipitationMeanUnit = "kg/m^2";
 
-	std::string rainProbability;
-	std::string rainProbabilityUnit = "%";
+	float rainProbability;
+	const char* rainProbabilityUnit = "%";
 
-	std::string cloudAreaFraction;
-	std::string cloudAreaFractionUnit = "octas";
+	float cloudAreaFraction;
+	const char* cloudAreaFractionUnit = "octas";
 
-	std::string visibility;
-	std::string visibilityUnit = "km";
+	float visibility;
+	const char* visibilityUnit = "km";
 
-	std::string thunderProbability;
-	std::string thunderProbabilityUnit = "%";
+	float thunderProbability;
+	const char* thunderProbabilityUnit = "%";
 
-	std::string snowProbability;
-	std::string snowProbabilityUnit = "fraction";
+	float snowProbability;
+	const char* snowProbabilityUnit = "fraction";
 
 	std::string getAllData() {
-		return date.ymdhms() + " : " + "\n\ttemperature: " + temp + " " + tempUnit +
-		       "\n\twindspeed and dir: " + windSpeed + " " + windSpeedUnit + ", " + windDirection + " " +
-		       windDirecitonUnit + "\n\tprecipitation mean (rain): " + precipitationMean + " " + precipitationMeanUnit +
-		       "\n\train prob: " + rainProbability + " " + rainProbabilityUnit +
-		       "\n\tcloud area fraction: " + cloudAreaFraction + " " + cloudAreaFractionUnit +
-		       "\n\tvisibility: " + visibility + " " + visibilityUnit +
-		       "\n\tthunder probability: " + thunderProbability + " " + thunderProbabilityUnit +
-		       "\n\tsnow probability: " + snowProbability + " " + snowProbabilityUnit + "\n";
+		std::string out;
+        out.reserve(512);              // PRE-ALLOCATE for speed
+
+        char num[32];                  // stack buffer for float → string
+
+        out += date.ymdhms();
+        out += ":\n";
+
+        snprintf(num, sizeof(num), "%.2f", temp);
+        out += "\ttemperature: "; out += num; out += " "; out += tempUnit; out += "\n";
+
+        snprintf(num, sizeof(num), "%.2f", windSpeed);
+        out += "\twindspeed: "; out += num; out += " "; out += windSpeedUnit; out += "\n";
+
+        snprintf(num, sizeof(num), "%.1f", windDirection);
+        out += "\twind direction: "; out += num; out += " "; out += windDirectionUnit; out += "\n";
+
+        snprintf(num, sizeof(num), "%.2f", precipitationMean);
+        out += "\tprecipitation mean: "; out += num; out += " "; out += precipitationMeanUnit; out += "\n";
+
+        snprintf(num, sizeof(num), "%.1f", rainProbability);
+        out += "\train probability: "; out += num; out += rainProbabilityUnit; out += "\n";
+
+        snprintf(num, sizeof(num), "%.2f", cloudAreaFraction);
+        out += "\tcloud area fraction: "; out += num; out += " "; out += cloudAreaFractionUnit; out += "\n";
+
+        snprintf(num, sizeof(num), "%.1f", visibility);
+        out += "\tvisibility: "; out += num; out += " "; out += visibilityUnit; out += "\n";
+
+        snprintf(num, sizeof(num), "%.1f", thunderProbability);
+        out += "\tthunder probability: "; out += num; out += thunderProbabilityUnit; out += "\n";
+
+        snprintf(num, sizeof(num), "%.2f", snowProbability);
+        out += "\tsnow probability: "; out += num; out += " "; out += snowProbabilityUnit; out += "\n";
+
+        return out;
 	}
 };
 
 std::vector<ForecastTemp> getForecastFromLongAndLat(std::string longitude, std::string latitude, Error& err) {
-	std::string payload =
-	    makeRequest("https://opendata-download-metfcst.smhi.se/api/category/snow1g/version/1/geotype/point/lon/" +
-	                    longitude + "/lat/" + latitude + "/data.json",
-	                err);
-
+	std::string url = "https://opendata-download-metfcst.smhi.se/api/category/snow1g/version/1/geotype/point/lon/"+longitude+"/lat/"+latitude+"/data.json";
+	std::string payload = makeRequest(url, err);
+	if (err) {
+		return {};
+	}
+	
 	JsonDocument doc;
+	#ifdef DEBUG
+	Serial.println((String) payload.c_str());
+	#endif
 	dezerializeJson(doc, payload, err);
 	if (err) {
 		return {};
@@ -158,24 +255,29 @@ std::vector<ForecastTemp> getForecastFromLongAndLat(std::string longitude, std::
 
 	JsonArray dates = doc["timeSeries"];
 
-	for (size_t i = 0; i < dates.size(); i++) {
+	size_t datesAmount = dates.size();
+
+	
+
+	for (size_t i = 0; i < datesAmount; i++) {
 		ForecastTemp temp;
 		JsonObject data = dates[i]["data"];
 		temp.date = ISO8601DateParser(dates[i]["time"], err);
 		if (err) {
 			return {};
 		}
-		temp.windDirection = std::to_string((JsonFloat)data["wind_from_direction"]);
-		temp.windSpeed = std::to_string((JsonFloat)data["wind_speed"]);
-		temp.temp = std::to_string((JsonFloat)data["air_temperature"]);
-		temp.precipitationMean = std::to_string((JsonFloat)data["precipitation_amount_mean"]);
-		temp.rainProbability = std::to_string((JsonFloat)data["probability_of_precipitation"]);
-		temp.cloudAreaFraction = std::to_string((JsonFloat)data["cloud_area_fraction"]);
-		temp.visibility = std::to_string((JsonFloat)data["visibility_in_air"]);
-		temp.thunderProbability = std::to_string((JsonFloat)data["thunderstorm_probability"]);
-		temp.snowProbability = std::to_string((JsonFloat)data["probability_of_frozen_precipitation"]);
+		if (!(i == 0 || temp.date.hour == 12)) continue;
+		temp.windDirection = data["wind_from_direction"].as<float>();
+		temp.windSpeed = data["wind_speed"].as<float>();
+		temp.temp = data["air_temperature"].as<float>();
+		temp.precipitationMean = data["precipitation_amount_mean"].as<float>();
+		temp.rainProbability = data["probability_of_precipitation"].as<float>();
+		temp.cloudAreaFraction = data["cloud_area_fraction"].as<float>();
+		temp.visibility = data["visibility_in_air"].as<float>();
+		temp.thunderProbability = data["thunderstorm_probability"].as<float>();
+		temp.snowProbability = data["probability_of_frozen_precipitation"].as<float>();
 
-		if (i == 0 || temp.date.hour == 12) out.push_back(temp);
+		out.push_back(temp);
 	}
 	return out;
 }
