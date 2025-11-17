@@ -7,10 +7,11 @@
 #include <LilyGo_AMOLED.h>
 #include <LV_Helper.h>
 #include <lvgl.h>
+#include "apiconnections.hpp"
 
-// Wi-Fi credentials (Delete these before commiting to GitHub) hthth
+// Wi-Fi credentials (Delete these before commiting to GitHub)
 static const char* WIFI_SSID     = "SSID";
-static const char* WIFI_PASSWORD = "PWD";
+static const char* WIFI_PASSWORD = "PASSWORD";
 
 LilyGo_Class amoled;
 
@@ -89,6 +90,9 @@ static void connect_wifi() {
   }
 }
 
+std::vector<ForecastTemp> forecastTemps;
+std::vector<HistoricData> historicData;
+
 // Must have function: Setup is run once on startup
 void setup() {
   Serial.begin(115200);
@@ -103,6 +107,30 @@ void setup() {
 
   create_ui();
   connect_wifi();
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Error err;
+    forecastTemps = getForecastFromLongAndLat(LONGITUDE, LATITUDE, err);
+    
+    if (!err) {
+      lv_label_set_text(t1_label, forecastTemps[0].getAllData().c_str());
+    } else {
+      lv_label_set_text(t1_label, err.msg.c_str());
+      lv_obj_set_size(t1_label,lv_disp_get_hor_res(NULL),lv_disp_get_ver_res(NULL));
+    }
+
+    err = Error();    
+
+    historicData = getHistoricDataFromId(STATION_ID, HISTORIC_TEMP, err);
+    if (!err) {
+      lv_label_set_text(t2_label, (historicData[0].date.ymdhms() + " : " + historicData[0].data + " " + historicData[0].unit).c_str());
+    } else {
+      lv_label_set_text(t2_label, err.msg.c_str());
+    }
+  } else {
+
+    
+  }
 }
 
 // Must have function: Loop runs continously on device after setup
