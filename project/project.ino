@@ -7,16 +7,25 @@
 #include <LilyGo_AMOLED.h>
 #include <LV_Helper.h>
 #include <lvgl.h>
+#include "apiconnections.hpp"
+#include "boot_screen.hpp"
+
+
+static const String VERSION = "1.0";
 
 // Wi-Fi credentials (Delete these before commiting to GitHub)
 static const char* WIFI_SSID     = "SSID";
-static const char* WIFI_PASSWORD = "PWD";
+static const char* WIFI_PASSWORD = "PASSWORD";
 
 LilyGo_Class amoled;
 
 static lv_obj_t* tileview;
 static lv_obj_t* t1;
 static lv_obj_t* t2;
+
+static lv_obj_t* bootScreen;
+
+
 static lv_obj_t* t1_label;
 static lv_obj_t* t2_label;
 static bool t2_dark = false;  // start tile #2 in light mode
@@ -45,8 +54,15 @@ static void create_ui() {
   lv_obj_set_scrollbar_mode(tileview, LV_SCROLLBAR_MODE_OFF);
 
   // Add two horizontal tiles
-  t1 = lv_tileview_add_tile(tileview, 0, 0, LV_DIR_HOR);
-  t2 = lv_tileview_add_tile(tileview, 1, 0, LV_DIR_HOR);
+  
+  t1 = lv_tileview_add_tile(tileview, 1, 0, LV_DIR_HOR);
+  t2 = lv_tileview_add_tile(tileview, 2, 0, LV_DIR_HOR);
+  bootScreen = lv_tileview_add_tile(tileview, 0,0, LV_DIR_HOR);
+
+  // BOOT SCREEN
+  {
+    create_bootscreen(tileview, bootScreen, VERSION);
+  }
 
   // Tile #1
   {
@@ -89,6 +105,9 @@ static void connect_wifi() {
   }
 }
 
+std::vector<ForecastTemp> forecastTemps;
+std::vector<HistoricData> historicData;
+
 // Must have function: Setup is run once on startup
 void setup() {
   Serial.begin(115200);
@@ -103,6 +122,30 @@ void setup() {
 
   create_ui();
   connect_wifi();
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Error err;
+    forecastTemps = getForecastFromLongAndLat(LONGITUDE, LATITUDE, err);
+    
+    if (!err) {
+      lv_label_set_text(t1_label, forecastTemps[0].getAllData().c_str());
+    } else {
+      lv_label_set_text(t1_label, err.msg.c_str());
+      lv_obj_set_size(t1_label,lv_disp_get_hor_res(NULL),lv_disp_get_ver_res(NULL));
+    }
+
+    err = Error();    
+
+    historicData = getHistoricDataFromId(STATION_ID, HISTORIC_TEMP, err);
+    if (!err) {
+      lv_label_set_text(t2_label, (historicData[0].date.ymdhms() + " : " + historicData[0].data + " " + historicData[0].unit).c_str());
+    } else {
+      lv_label_set_text(t2_label, err.msg.c_str());
+    }
+  } else {
+
+    
+  }
 }
 
 // Must have function: Loop runs continously on device after setup
