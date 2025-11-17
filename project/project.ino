@@ -63,7 +63,8 @@ static void create_ui() {
     String version_label = "Version: " + VERSION + "\n Group 10";
     bootScreenLabel1 = lv_label_create(bootScreen);
     lv_label_set_text(bootScreenLabel1, version_label.c_str());
-    
+    lv_obj_set_style_text_font(bootScreenLabel1, &lv_font_montserrat_16, LV_PART_MAIN);
+    lv_obj_align(bootScreenLabel1, LV_ALIGN_CENTER, 0, 0);
   }
 
   // Tile #1
