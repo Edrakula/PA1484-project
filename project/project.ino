@@ -9,6 +9,9 @@
 #include <lvgl.h>
 #include "apiconnections.hpp"
 
+
+static const String VERSION = "1.0";
+
 // Wi-Fi credentials (Delete these before commiting to GitHub)
 static const char* WIFI_SSID     = "SSID";
 static const char* WIFI_PASSWORD = "PASSWORD";
@@ -57,7 +60,9 @@ static void create_ui() {
 
   // BOOT SCREEN
   {
+    String version_label = "Version: " + VERSION + "/n Group 10";
     bootScreenLabel1 = lv_label_create(bootScreen);
+    lv_label_set_text(bootScreenLabel1, version_label.c_str())
     
   }
 
