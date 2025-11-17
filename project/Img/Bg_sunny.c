@@ -23,6 +23,15 @@ lv_obj_t* create_gradient_bg(lv_obj_t *parent)
 
     // Applicera stil
     lv_obj_add_style(bg, &style_bg, 0);
+    
+    lv_obj_t *scr = lv_scr_act();
+    // --- Sun ---
+    lv_obj_t *sun = lv_obj_create(scr);
+    lv_obj_set_size(sun, 130, 130);
+    lv_obj_set_style_radius(sun, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_bg_color(sun, lv_color_hex(0xFFD726), 0);
+    lv_obj_set_style_border_width(sun, 0, 0);
+    lv_obj_align(sun, LV_ALIGN_TOP_RIGHT, -40, 40);
 
     return bg;
 }
