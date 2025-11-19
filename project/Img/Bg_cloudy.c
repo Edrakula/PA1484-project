@@ -2,24 +2,22 @@
 
 void draw_cloudy_ui(lv_obj_t *tile)
 {
-    // ----- Background (gray sky) -----
-    lv_obj_set_style_bg_color(tile, lv_color_hex(0xB0C4DE), 0); // light grayish blue
-    lv_obj_set_style_bg_grad_color(tile, lv_color_hex(0xD3DCE6), 0);
+    // common text color
+    lv_color_t text_color = lv_color_hex(0xFFFFFF);
+
+    // ----- Background (light grey/blueish sky) -----
+    lv_obj_set_style_bg_color(tile, lv_color_hex(0x5D6A92), 0);
+    lv_obj_set_style_bg_grad_color(tile, lv_color_hex(0x3E3A59), 0);
     lv_obj_set_style_bg_grad_dir(tile, LV_GRAD_DIR_VER, 0);
     lv_obj_set_style_border_width(tile, 0, 0);
 
-    // ----- Clouds -----
-    lv_obj_t *cloud1 = lv_obj_create(tile);
-    lv_obj_set_size(cloud1, 220, 90);
-    lv_obj_set_style_radius(cloud1, 50, 0);
-    lv_obj_set_style_bg_color(cloud1, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_align(cloud1, LV_ALIGN_TOP_LEFT, 40, 50);
+    // ----- cloud ----- behöver uppdatering på formen
+    lv_obj_t *cloud = lv_obj_create(tile);
+    lv_obj_set_size(cloud, 130, 130);
+    lv_obj_set_style_radius(cloud, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_bg_color(cloud, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_align(cloud, LV_ALIGN_TOP_RIGHT, -40, 40);
 
-    lv_obj_t *cloud2 = lv_obj_create(tile);
-    lv_obj_set_size(cloud2, 180, 70);
-    lv_obj_set_style_radius(cloud2, 50, 0);
-    lv_obj_set_style_bg_color(cloud2, lv_color_hex(0xE0E0E0), 0);
-    lv_obj_align(cloud2, LV_ALIGN_TOP_RIGHT, -40, 70);
 
     // ----- Temperature box -----
     lv_obj_t *temp_box = lv_obj_create(tile);
@@ -30,21 +28,24 @@ void draw_cloudy_ui(lv_obj_t *tile)
     lv_obj_set_style_pad_all(temp_box, 8, 0);
     lv_obj_align(temp_box, LV_ALIGN_LEFT_MID, 20, -20);
 
-    // Temperature label
+    // Temperature label inside the box
     lv_obj_t *temp_label = lv_label_create(temp_box);
-    lv_label_set_text(temp_label, "11° C"); // placeholder
+    lv_label_set_text(temp_label, "11° C");              // placeholder
     lv_obj_set_style_text_font(temp_label, &lv_font_montserrat_28, 0);
+    lv_obj_set_style_text_color(temp_label, text_color, 0);
     lv_obj_center(temp_label);
 
-    // ----- Condition text ("Cloudy") -----
+    // ----- Condition text ("cloudy") -----
     lv_obj_t *cond_label = lv_label_create(tile);
-    lv_label_set_text(cond_label, "Cloudy");
+    lv_label_set_text(cond_label, "cloudy");
     lv_obj_set_style_text_font(cond_label, &lv_font_montserrat_28, 0);
+    lv_obj_set_style_text_color(cond_label, lv_color_hex(0x000000), 0);
     lv_obj_align(cond_label, LV_ALIGN_LEFT_MID, 25, 30);
 
     // ----- City name -----
     lv_obj_t *city_label = lv_label_create(tile);
     lv_label_set_text(city_label, "Karlskrona");
+    lv_obj_set_style_text_color(city_label, lv_color_hex(0x000000), 0);
     lv_obj_align(city_label, LV_ALIGN_TOP_MID, 0, 10);
 
     // ----- Weekly forecast card -----
@@ -59,12 +60,16 @@ void draw_cloudy_ui(lv_obj_t *tile)
     int x = 20;
 
     for (int i = 0; i < 7; i++) {
+        // day name
         lv_obj_t *lbl = lv_label_create(card);
         lv_label_set_text(lbl, days[i]);
+        lv_obj_set_style_text_color(lbl, text_color, 0);
         lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, x, 10);
 
+        // small temperature
         lv_obj_t *t = lv_label_create(card);
-        lv_label_set_text(t, "11°"); // placeholder
+        lv_label_set_text(t, "11°");        // placeholder for day temp
+        lv_obj_set_style_text_color(t, text_color, 0);
         lv_obj_align(t, LV_ALIGN_TOP_LEFT, x, 40);
 
         x += 55;
