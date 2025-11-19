@@ -1,0 +1,163 @@
+# 1 "C:\\Users\\mikez\\AppData\\Local\\Temp\\tmpzd285bkk"
+#include <Arduino.h>
+# 1 "C:/Users/mikez/Documents/GitHub/PA1484-project/project/project.ino"
+#include <Arduino.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+#include <TFT_eSPI.h>
+#include <time.h>
+#include <LilyGo_AMOLED.h>
+#include <LV_Helper.h>
+#include <lvgl.h>
+#include "apiconnections.hpp"
+#include "boot_screen.hpp"
+
+
+static const String VERSION = "1.0";
+
+
+static const char* WIFI_SSID = "SSID";
+static const char* WIFI_PASSWORD = "PASSWORD";
+
+LilyGo_Class amoled;
+
+static lv_obj_t* tileview;
+static lv_obj_t* t1;
+static lv_obj_t* t2;
+
+static lv_obj_t* bootScreen;
+
+
+static lv_obj_t* t1_label;
+static lv_obj_t* t2_label;
+static bool t2_dark = false;
+static void apply_tile_colors(lv_obj_t* tile, lv_obj_t* label, bool dark);
+static void on_tile2_clicked(lv_event_t* e);
+static void create_ui();
+static void connect_wifi();
+void setup();
+void loop();
+#line 34 "C:/Users/mikez/Documents/GitHub/PA1484-project/project/project.ino"
+static void apply_tile_colors(lv_obj_t* tile, lv_obj_t* label, bool dark) {
+
+  lv_obj_set_style_bg_opa(tile, LV_OPA_COVER, 0);
+  lv_obj_set_style_bg_color(tile, dark ? lv_color_black() : lv_color_white(), 0);
+
+
+  lv_obj_set_style_text_color(label, dark ? lv_color_white() : lv_color_black(), 0);
+}
+
+static void on_tile2_clicked(lv_event_t* e) {
+  LV_UNUSED(e);
+  t2_dark = !t2_dark;
+  apply_tile_colors(t2, t2_label, t2_dark);
+}
+
+
+static void create_ui() {
+
+  tileview = lv_tileview_create(lv_scr_act());
+  lv_obj_set_size(tileview, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL));
+  lv_obj_set_scrollbar_mode(tileview, LV_SCROLLBAR_MODE_OFF);
+
+
+
+  t1 = lv_tileview_add_tile(tileview, 1, 0, LV_DIR_HOR);
+  t2 = lv_tileview_add_tile(tileview, 2, 0, LV_DIR_HOR);
+  bootScreen = lv_tileview_add_tile(tileview, 0,0, LV_DIR_HOR);
+
+
+  {
+    create_bootscreen(tileview, bootScreen, VERSION);
+  }
+
+
+  {
+    t1_label = lv_label_create(t1);
+    lv_label_set_text(t1_label, "Hello Students");
+    lv_obj_set_style_text_font(t1_label, &lv_font_montserrat_28, 0);
+    lv_obj_center(t1_label);
+    apply_tile_colors(t1, t1_label, false);
+  }
+
+
+  {
+    t2_label = lv_label_create(t2);
+    lv_label_set_text(t2_label, "Welcome to the workshop");
+    lv_obj_set_style_text_font(t2_label, &lv_font_montserrat_28, 0);
+    lv_obj_center(t2_label);
+
+    apply_tile_colors(t2, t2_label, false);
+    lv_obj_add_flag(t2, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(t2, on_tile2_clicked, LV_EVENT_CLICKED, NULL);
+  }
+}
+
+
+static void connect_wifi() {
+  Serial.printf("Connecting to WiFi SSID: %s\n", WIFI_SSID);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+  const uint32_t start = millis();
+  while (WiFi.status() != WL_CONNECTED && (millis() - start) < 15000) {
+    delay(250);
+  }
+  Serial.println();
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.print("WiFi connected.");
+  } else {
+    Serial.println("WiFi could not connect (timeout).");
+  }
+}
+
+std::vector<ForecastTemp> forecastTemps;
+std::vector<HistoricData> historicData;
+
+
+void setup() {
+  Serial.begin(115200);
+  delay(200);
+
+  if (!amoled.begin()) {
+    Serial.println("Failed to init LilyGO AMOLED.");
+    while (true) delay(1000);
+  }
+
+  beginLvglHelper(amoled);
+
+  create_ui();
+  connect_wifi();
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Error err;
+    forecastTemps = getForecastFromLongAndLat(LONGITUDE, LATITUDE, err);
+
+    if (!err) {
+      lv_label_set_text(t1_label, forecastTemps[0].getAllData().c_str());
+    } else {
+      lv_label_set_text(t1_label, err.msg.c_str());
+      lv_obj_set_size(t1_label,lv_disp_get_hor_res(NULL),lv_disp_get_ver_res(NULL));
+    }
+
+    err = Error();
+
+    historicData = getHistoricDataFromId(STATION_ID, HISTORIC_TEMP, err);
+    if (!err) {
+      lv_label_set_text(t2_label, (historicData[0].date.ymdhms() + " : " + historicData[0].data + " " + historicData[0].unit).c_str());
+    } else {
+      lv_label_set_text(t2_label, err.msg.c_str());
+    }
+  } else {
+
+
+  }
+}
+
+
+void loop() {
+  lv_timer_handler();
+  delay(5);
+}
