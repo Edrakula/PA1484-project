@@ -10,14 +10,12 @@ void draw_cloudy_ui(lv_obj_t *tile)
 
     // ----- Clouds -----
     lv_obj_t *cloud1 = lv_obj_create(tile);
-    lv_obj_remove_style_all(cloud1);
     lv_obj_set_size(cloud1, 220, 90);
     lv_obj_set_style_radius(cloud1, 50, 0);
     lv_obj_set_style_bg_color(cloud1, lv_color_hex(0xFFFFFF), 0);
     lv_obj_align(cloud1, LV_ALIGN_TOP_LEFT, 40, 50);
 
     lv_obj_t *cloud2 = lv_obj_create(tile);
-    lv_obj_remove_style_all(cloud2);
     lv_obj_set_size(cloud2, 180, 70);
     lv_obj_set_style_radius(cloud2, 50, 0);
     lv_obj_set_style_bg_color(cloud2, lv_color_hex(0xE0E0E0), 0);
@@ -25,7 +23,6 @@ void draw_cloudy_ui(lv_obj_t *tile)
 
     // ----- Temperature box -----
     lv_obj_t *temp_box = lv_obj_create(tile);
-    lv_obj_remove_style_all(temp_box);
     lv_obj_set_size(temp_box, 150, 70);
     lv_obj_set_style_bg_color(temp_box, lv_color_hex(0x2F2F2F), 0);
     lv_obj_set_style_radius(temp_box, 18, 0);
@@ -52,7 +49,6 @@ void draw_cloudy_ui(lv_obj_t *tile)
 
     // ----- Weekly forecast card -----
     lv_obj_t *card = lv_obj_create(tile);
-    lv_obj_remove_style_all(card);
     lv_obj_set_size(card, 420, 120);
     lv_obj_set_style_bg_color(card, lv_color_hex(0x3A3A3A), 0);
     lv_obj_set_style_radius(card, 25, 0);
