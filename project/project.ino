@@ -9,7 +9,8 @@
 #include <lvgl.h>
 #include "apiconnections.hpp"
 #include "boot_screen.hpp"
-
+#include "historic_data_screen.hpp"
+#include "Img/Bg_sunny.hpp"
 
 static const String VERSION = "1.0";
 
@@ -66,23 +67,12 @@ static void create_ui() {
 
   // Tile #1
   {
-    t1_label = lv_label_create(t1);
-    lv_label_set_text(t1_label, "Hello Students");
-    lv_obj_set_style_text_font(t1_label, &lv_font_montserrat_28, 0);
-    lv_obj_center(t1_label);
-    apply_tile_colors(t1, t1_label, /*dark=*/false);
+    draw_sunny_ui(t1);
   }
 
   // Tile #2
   {
-    t2_label = lv_label_create(t2);
-    lv_label_set_text(t2_label, "Welcome to the workshop");
-    lv_obj_set_style_text_font(t2_label, &lv_font_montserrat_28, 0);
-    lv_obj_center(t2_label);
-
-    apply_tile_colors(t2, t2_label, /*dark=*/false);
-    lv_obj_add_flag(t2, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(t2, on_tile2_clicked, LV_EVENT_CLICKED, NULL);
+    CreateHistoricDataScreen(tileview, t2);
   }
 }
 
@@ -128,20 +118,21 @@ void setup() {
     forecastTemps = getForecastFromLongAndLat(LONGITUDE, LATITUDE, err);
     
     if (!err) {
-      lv_label_set_text(t1_label, forecastTemps[0].getAllData().c_str());
+      update_temperatures(forecastTemps);
     } else {
-      lv_label_set_text(t1_label, err.msg.c_str());
-      lv_obj_set_size(t1_label,lv_disp_get_hor_res(NULL),lv_disp_get_ver_res(NULL));
+      //lv_label_set_text(t1_label, err.msg.c_str());
+      //lv_obj_set_size(t1_label,lv_disp_get_hor_res(NULL),lv_disp_get_ver_res(NULL));
     }
 
     err = Error();    
-
+    /*
     historicData = getHistoricDataFromId(STATION_ID, HISTORIC_TEMP, err);
     if (!err) {
       lv_label_set_text(t2_label, (historicData[0].date.ymdhms() + " : " + historicData[0].data + " " + historicData[0].unit).c_str());
     } else {
       lv_label_set_text(t2_label, err.msg.c_str());
     }
+    */
   } else {
 
     

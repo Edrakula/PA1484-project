@@ -1,4 +1,11 @@
 #include "lvgl.h"
+#include "apiconnections.hpp"
+#include <sstream>
+#include <iomanip>
+#include <string>
+
+lv_obj_t *temperatures[7];
+lv_obj_t *temp_label;
 
 void draw_sunny_ui(lv_obj_t *tile)
 {
@@ -29,7 +36,7 @@ void draw_sunny_ui(lv_obj_t *tile)
     lv_obj_align(temp_box, LV_ALIGN_LEFT_MID, 20, -20);
 
     // Temperature label inside the box
-    lv_obj_t *temp_label = lv_label_create(temp_box);
+    temp_label = lv_label_create(temp_box);
     lv_label_set_text(temp_label, "11° C");              // placeholder
     lv_obj_set_style_text_font(temp_label, &lv_font_montserrat_28, 0);
     lv_obj_set_style_text_color(temp_label, text_color, 0);
@@ -67,11 +74,39 @@ void draw_sunny_ui(lv_obj_t *tile)
         lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, x, 10);
 
         // small temperature
-        lv_obj_t *t = lv_label_create(card);
+        temperatures[i] = lv_label_create(card);
+        lv_obj_t *t = temperatures[i];
         lv_label_set_text(t, "11°");        // placeholder for day temp
         lv_obj_set_style_text_color(t, text_color, 0);
         lv_obj_align(t, LV_ALIGN_TOP_LEFT, x, 40);
 
         x += 55;
     }
+}
+
+void update_temperatures(std::vector<ForecastTemp> forecastTemps) {
+    int y = 7;
+    if (forecastTemps.size() < 7) {
+        y = forecastTemps.size();
+    }
+
+    std::ostringstream oss0;
+    oss0 << std::fixed << std::setprecision(1) << forecastTemps[0].temp;
+
+    std::string s0 = oss0.str();
+
+    lv_label_set_text(temp_label, (s0 + "°").c_str()); 
+
+    for (int i = 0; i < 7; i++) {
+        lv_obj_t *t = temperatures[i];
+
+
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(1) << forecastTemps[i].temp;
+
+        std::string s = oss.str();
+
+        lv_label_set_text(t, (s + "°").c_str());
+    }
+
 }
