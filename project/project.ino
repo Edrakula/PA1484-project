@@ -10,7 +10,7 @@
 #include "apiconnections.hpp"
 #include "boot_screen.hpp"
 #include "historic_data_screen.hpp"
-#include "Img/Bg_sunny.hpp"
+#include "Img/Bg_sleet.hpp"
 
 static const String VERSION = "1.0";
 
@@ -67,7 +67,7 @@ static void create_ui() {
 
   // Tile #1
   {
-    draw_sunny_ui(t1);
+    draw_sleet_ui(t1);
   }
 
   // Tile #2
@@ -115,10 +115,10 @@ void setup() {
 
   if (WiFi.status() == WL_CONNECTED) {
     Error err;
-    forecastTemps = getForecastFromLongAndLat(LONGITUDE, LATITUDE, err);
+    //forecastTemps = getForecastFromLongAndLat(LONGITUDE, LATITUDE, err);
     
     if (!err) {
-      update_temperatures(forecastTemps);
+      //update_temperatures(forecastTemps);
     } else {
       //lv_label_set_text(t1_label, err.msg.c_str());
       //lv_obj_set_size(t1_label,lv_disp_get_hor_res(NULL),lv_disp_get_ver_res(NULL));

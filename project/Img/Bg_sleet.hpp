@@ -4,8 +4,8 @@
 #include <iomanip>
 #include <string>
 
-extern lv_obj_t *temperatures[7];
-extern lv_obj_t *temp_label;
+lv_obj_t *temperatures[7];
+lv_obj_t *temp_label;
 
 // --- Helper for sleet drop ---
 static void create_sleet_drop(lv_obj_t *parent, lv_coord_t x, lv_coord_t y)
@@ -115,3 +115,30 @@ void draw_sleet_ui(lv_obj_t *tile)
     }
 }
 
+
+void update_temperatures(std::vector<ForecastTemp> forecastTemps) {
+    int y = 7;
+    if (forecastTemps.size() < 7) {
+        y = forecastTemps.size();
+    }
+
+    std::ostringstream oss0;
+    oss0 << std::fixed << std::setprecision(1) << forecastTemps[0].temp;
+
+    std::string s0 = oss0.str();
+
+    lv_label_set_text(temp_label, (s0 + "°").c_str()); 
+
+    for (int i = 0; i < 7; i++) {
+        lv_obj_t *t = temperatures[i];
+
+
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(1) << forecastTemps[i].temp;
+
+        std::string s = oss.str();
+
+        lv_label_set_text(t, (s + "°").c_str());
+    }
+
+}

@@ -112,7 +112,7 @@ std::vector<std::pair<std::string, std::string>> getAllStations(Error& err) {
 
 struct HistoricData {
 	Date date;
-	std::string data;
+	float data;
 	std::string unit;
 };
 
@@ -147,7 +147,7 @@ std::vector<HistoricData> getHistoricDataFromId(std::string id, int parameter, E
 	for (size_t i = 0; i < valuesAmount; i++) {
 		if (valuesAmount > 200 && i == 0) i = 11;
 		HistoricData data;
-		data.data = values[i]["value"].as<std::string>();
+		data.data = values[i]["value"].as<float>();
 		data.unit = parameterUnit;
 		uint64_t unixTime = values[i]["date"].as<uint64_t>();
 		if (unixTime) {

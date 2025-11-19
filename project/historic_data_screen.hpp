@@ -39,8 +39,15 @@ void CreateHistoricDataScreen(lv_obj_t *TILE_VIEW, lv_obj_t *TILE) {
 }
 
 void populateGraph(std::vector<HistoricData> data) {
-    lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, 0, data.size());
-    
+
+    size_t dataSize = data.size();
+
+    lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, 0, dataSize);
+
+    for(size_t i = 0; i < dataSize; i++) {
+        chartData->y_points[i] = data[i].data;
+    }
+    lv_chart_refresh(chart);
 }
 
 #endif
