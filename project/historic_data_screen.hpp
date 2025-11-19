@@ -9,6 +9,7 @@
 #include <lvgl.h>
 
 #include "apiconnections.hpp"
+#include "historic_data_screen_slider.hpp"
 
 static lv_obj_t* chart;
 
