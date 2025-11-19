@@ -52,7 +52,7 @@ void draw_sunny_ui(lv_obj_t *tile)
     // ----- City name -----
     lv_obj_t *city_label = lv_label_create(tile);
     lv_label_set_text(city_label, "Karlskrona");
-    lv_obj_set_style_text_color(city_label, lv_color_hex(0x000000), 0);
+    lv_obj_set_style_text_color(city_label, lv_color_hex(0x0000000), 0);
     lv_obj_align(city_label, LV_ALIGN_TOP_MID, 0, 10);
 
     // ----- Weekly forecast card -----

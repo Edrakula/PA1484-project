@@ -4,7 +4,7 @@
 static void create_raindrop(lv_obj_t *parent, lv_coord_t x, lv_coord_t y)
 {
     lv_obj_t *drop = lv_obj_create(parent);
-    lv_obj_remove_style_all(drop);
+    
 
     lv_obj_set_size(drop, 10, 18);
     lv_obj_set_style_radius(drop, LV_RADIUS_CIRCLE, 0);
@@ -24,7 +24,6 @@ void draw_rainy_ui(lv_obj_t *tile)
 
     // ----- Big cloud at the top -----
     lv_obj_t *cloud = lv_obj_create(tile);
-    lv_obj_remove_style_all(cloud);
     lv_obj_set_size(cloud, 480, 110);                  // a bit wider than screen
     lv_obj_set_style_bg_color(cloud, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_radius(cloud, 60, 0);
@@ -32,7 +31,6 @@ void draw_rainy_ui(lv_obj_t *tile)
 
     // ----- Temperature box -----
     lv_obj_t *temp_box = lv_obj_create(tile);
-    lv_obj_remove_style_all(temp_box);
     lv_obj_set_size(temp_box, 150, 70);
     lv_obj_set_style_bg_color(temp_box, lv_color_hex(0x2F2F2F), 0);
     lv_obj_set_style_radius(temp_box, 18, 0);
@@ -59,7 +57,6 @@ void draw_rainy_ui(lv_obj_t *tile)
 
     // ----- Weekly forecast card -----
     lv_obj_t *card = lv_obj_create(tile);
-    lv_obj_remove_style_all(card);
     lv_obj_set_size(card, 420, 120);
     lv_obj_set_style_bg_color(card, lv_color_hex(0x3A3A3A), 0);
     lv_obj_set_style_radius(card, 25, 0);
