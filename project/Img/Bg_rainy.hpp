@@ -1,10 +1,17 @@
 #include "lvgl.h"
+#include "apiconnections.hpp"
+#include <sstream>
+#include <iomanip>
+#include <string>
+
+
+extern lv_obj_t *temperatures[7];
+extern lv_obj_t *temp_label;
 
 // Helper: create one blue raindrop
 static void create_raindrop(lv_obj_t *parent, lv_coord_t x, lv_coord_t y)
 {
     lv_obj_t *drop = lv_obj_create(parent);
-    
 
     lv_obj_set_size(drop, 10, 18);
     lv_obj_set_style_radius(drop, LV_RADIUS_CIRCLE, 0);
@@ -16,6 +23,8 @@ static void create_raindrop(lv_obj_t *parent, lv_coord_t x, lv_coord_t y)
 
 void draw_rainy_ui(lv_obj_t *tile)
 {
+    lv_color_t text_color = lv_color_hex(0xFFFFFF);
+
     // ----- Background (dark top -> light bottom) -----
     lv_obj_set_style_bg_color(tile, lv_color_hex(0x3F4E5A), 0);
     lv_obj_set_style_bg_grad_color(tile, lv_color_hex(0xD8F2FF), 0);
@@ -27,6 +36,7 @@ void draw_rainy_ui(lv_obj_t *tile)
     lv_obj_set_size(cloud, 480, 110);                  // a bit wider than screen
     lv_obj_set_style_bg_color(cloud, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_radius(cloud, 60, 0);
+    lv_obj_set_style_border_width(cloud, 0, 0);
     lv_obj_align(cloud, LV_ALIGN_TOP_MID, 0, -40);     // push up so only bottom shows
 
     // ----- Temperature box -----
@@ -38,21 +48,24 @@ void draw_rainy_ui(lv_obj_t *tile)
     lv_obj_set_style_pad_all(temp_box, 8, 0);
     lv_obj_align(temp_box, LV_ALIGN_LEFT_MID, 20, -20);
 
-    // Temperature label inside the box
-    lv_obj_t *temp_label = lv_label_create(temp_box);
+    // Temperature label inside the box (GLOBAL pointer!)
+    temp_label = lv_label_create(temp_box);
     lv_label_set_text(temp_label, "11° C");             // placeholder
     lv_obj_set_style_text_font(temp_label, &lv_font_montserrat_28, 0);
+    lv_obj_set_style_text_color(temp_label, text_color, 0);
     lv_obj_center(temp_label);
 
     // ----- Condition text ("Rainy") -----
     lv_obj_t *cond_label = lv_label_create(tile);
     lv_label_set_text(cond_label, "Rainy");
     lv_obj_set_style_text_font(cond_label, &lv_font_montserrat_28, 0);
+    lv_obj_set_style_text_color(cond_label, lv_color_hex(0x000000), 0);
     lv_obj_align(cond_label, LV_ALIGN_LEFT_MID, 25, 30);
 
-    // ----- City name (optional) -----
+    // ----- City name -----
     lv_obj_t *city_label = lv_label_create(tile);
     lv_label_set_text(city_label, "Karlskrona");
+    lv_obj_set_style_text_color(city_label, lv_color_hex(0x000000), 0);
     lv_obj_align(city_label, LV_ALIGN_TOP_MID, 0, 10);
 
     // ----- Weekly forecast card -----
@@ -67,24 +80,29 @@ void draw_rainy_ui(lv_obj_t *tile)
     int x = 20;
 
     for (int i = 0; i < 7; i++) {
+        // day name
         lv_obj_t *lbl = lv_label_create(card);
         lv_label_set_text(lbl, days[i]);
+        lv_obj_set_style_text_color(lbl, text_color, 0);
         lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, x, 10);
 
-        lv_obj_t *t = lv_label_create(card);
+        // small temperature (GLOBAL array!)
+        temperatures[i] = lv_label_create(card);
+        lv_obj_t *t = temperatures[i];
         lv_label_set_text(t, "11°");        // placeholder for day temp
+        lv_obj_set_style_text_color(t, text_color, 0);
         lv_obj_align(t, LV_ALIGN_TOP_LEFT, x, 40);
 
         x += 55;
     }
 
     // ----- Raindrops under the cloud -----
-    int start_y = 130;      // start below cloud
-    int rows    = 6;
-    int cols    = 5;
-    int dx      = 70;
-    int dy      = 45;
-    int start_x = 30;
+    const int start_y = 130;      // start below cloud
+    const int rows    = 6;
+    const int cols    = 5;
+    const int dx      = 70;
+    const int dy      = 45;
+    const int start_x = 30;
 
     for (int r = 0; r < rows; r++) {
         for (int c = 0; c < cols; c++) {
