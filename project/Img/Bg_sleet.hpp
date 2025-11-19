@@ -1,35 +1,42 @@
 #include "lvgl.h"
+#include "apiconnections.hpp"
+#include <sstream>
+#include <iomanip>
+#include <string>
 
-// Helper: sleet drop (a line + a dot)
+extern lv_obj_t *temperatures[7];
+extern lv_obj_t *temp_label;
+
+// --- Helper for sleet drop ---
 static void create_sleet_drop(lv_obj_t *parent, lv_coord_t x, lv_coord_t y)
 {
-    // diagonal line
+    // diagonal line (icy blue)
     lv_obj_t *line = lv_obj_create(parent);
     lv_obj_set_size(line, 4, 14);
     lv_obj_set_style_radius(line, 2, 0);
-    lv_obj_set_style_bg_color(line, lv_color_hex(0xAEE6FF), 0);  // icy blue
+    lv_obj_set_style_bg_color(line, lv_color_hex(0xAEE6FF), 0);
     lv_obj_set_style_border_width(line, 0, 0);
     lv_obj_align(line, LV_ALIGN_TOP_LEFT, x, y);
 
-    // dot under it
+    // dot
     lv_obj_t *dot = lv_obj_create(parent);
     lv_obj_set_size(dot, 6, 6);
     lv_obj_set_style_radius(dot, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_bg_color(dot, lv_color_hex(0xAEE6FF), 0);
     lv_obj_set_style_border_width(dot, 0, 0);
-    lv_obj_align(dot, LV_ALIGN_TOP_LEFT, x + -1, y + 14);
+    lv_obj_align(dot, LV_ALIGN_TOP_LEFT, x - 1, y + 14);
 }
 
 void draw_sleet_ui(lv_obj_t *tile)
 {
     lv_color_t text_color = lv_color_hex(0xFFFFFF);
 
-    // ----- Background cold grey/blue -----
+    // ----- Background -----
     lv_obj_set_style_bg_color(tile, lv_color_hex(0x546270), 0);
     lv_obj_set_style_bg_grad_color(tile, lv_color_hex(0xC9E7F5), 0);
     lv_obj_set_style_bg_grad_dir(tile, LV_GRAD_DIR_VER, 0);
 
-    // ----- Big cloud -----
+    // ----- Cloud -----
     lv_obj_t *cloud = lv_obj_create(tile);
     lv_obj_set_size(cloud, 480, 110);
     lv_obj_set_style_bg_color(cloud, lv_color_hex(0xFFFFFF), 0);
@@ -44,23 +51,24 @@ void draw_sleet_ui(lv_obj_t *tile)
     lv_obj_set_style_pad_all(temp_box, 8, 0);
     lv_obj_align(temp_box, LV_ALIGN_LEFT_MID, 20, -20);
 
-    lv_obj_t *temp_label = lv_label_create(temp_box);
+    // Temperature label (same pointer as sunny!)
+    temp_label = lv_label_create(temp_box);
     lv_label_set_text(temp_label, "0° C");
     lv_obj_set_style_text_font(temp_label, &lv_font_montserrat_28, 0);
     lv_obj_set_style_text_color(temp_label, text_color, 0);
     lv_obj_center(temp_label);
 
-    // ----- Condition text -----
+    // ----- Condition -----
     lv_obj_t *cond_label = lv_label_create(tile);
     lv_label_set_text(cond_label, "Sleet");
     lv_obj_set_style_text_font(cond_label, &lv_font_montserrat_28, 0);
-    lv_obj_set_style_text_color(cond_label, text_color, 0);
+    lv_obj_set_style_text_color(cond_label, lv_color_hex(0x000000), 0);
     lv_obj_align(cond_label, LV_ALIGN_LEFT_MID, 25, 30);
 
     // ----- City -----
     lv_obj_t *city_label = lv_label_create(tile);
     lv_label_set_text(city_label, "Karlskrona");
-    lv_obj_set_style_text_color(city_label, text_color, 0);
+    lv_obj_set_style_text_color(city_label, lv_color_hex(0x000000), 0);
     lv_obj_align(city_label, LV_ALIGN_TOP_MID, 0, 10);
 
     // ----- Weekly forecast card -----
@@ -74,12 +82,15 @@ void draw_sleet_ui(lv_obj_t *tile)
     int x = 20;
 
     for (int i = 0; i < 7; i++) {
+        // Day label
         lv_obj_t *lbl = lv_label_create(card);
         lv_label_set_text(lbl, days[i]);
         lv_obj_set_style_text_color(lbl, text_color, 0);
         lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, x, 10);
 
-        lv_obj_t *t = lv_label_create(card);
+        // Temperature label (same array as sunny!)
+        temperatures[i] = lv_label_create(card);
+        lv_obj_t *t = temperatures[i];
         lv_label_set_text(t, "0°");
         lv_obj_set_style_text_color(t, text_color, 0);
         lv_obj_align(t, LV_ALIGN_TOP_LEFT, x, 40);
@@ -103,3 +114,4 @@ void draw_sleet_ui(lv_obj_t *tile)
         }
     }
 }
+
