@@ -85,3 +85,15 @@ void draw_rainy_ui(lv_obj_t *tile)
     int start_y = 130;      // start below cloud
     int rows    = 6;
     int cols    = 5;
+    int dx      = 70;
+    int dy      = 45;
+    int start_x = 30;
+
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            int rx = start_x + c * dx + ((r & 1) ? 30 : 0);  // staggered
+            int ry = start_y + r * dy;
+            create_raindrop(tile, rx, ry);
+        }
+    }
+}
