@@ -115,24 +115,28 @@ void setup() {
 
   if (WiFi.status() == WL_CONNECTED) {
     Error err;
-    //forecastTemps = getForecastFromLongAndLat(LONGITUDE, LATITUDE, err);
-    
+    Serial.println("getting forcastData");
+    forecastTemps = getForecastFromLongAndLat(LONGITUDE, LATITUDE, err);
+    Serial.println("got forecastData");
     if (!err) {
-      //update_temperatures(forecastTemps);
+      update_temperatures(forecastTemps);
     } else {
       //lv_label_set_text(t1_label, err.msg.c_str());
       //lv_obj_set_size(t1_label,lv_disp_get_hor_res(NULL),lv_disp_get_ver_res(NULL));
     }
 
     err = Error();    
-    /*
+    
+    Serial.println("getting historic data");
     historicData = getHistoricDataFromId(STATION_ID, HISTORIC_TEMP, err);
+    Serial.println("got historic data");
     if (!err) {
-      lv_label_set_text(t2_label, (historicData[0].date.ymdhms() + " : " + historicData[0].data + " " + historicData[0].unit).c_str());
+      Serial.println(historicData[0].date.ymdhms().c_str());
+      populateGraph(historicData);
     } else {
-      lv_label_set_text(t2_label, err.msg.c_str());
+      
     }
-    */
+    
   } else {
 
     

@@ -16,7 +16,7 @@ static void create_sleet_drop(lv_obj_t *parent, lv_coord_t x, lv_coord_t y)
     lv_obj_set_style_radius(line, 2, 0);
     lv_obj_set_style_bg_color(line, lv_color_hex(0xAEE6FF), 0);
     lv_obj_set_style_border_width(line, 0, 0);
-    lv_obj_align(line, LV_ALIGN_TOP_LEFT, x, y);
+    lv_obj_align(line, LV_ALIGN_TOP_MID,-240 + x, y);
     lv_obj_move_background(line);
 
     // dot
@@ -30,7 +30,7 @@ static void create_sleet_drop(lv_obj_t *parent, lv_coord_t x, lv_coord_t y)
     lv_obj_set_style_border_color(dot, lv_color_hex(0x000000), 0); // black
     lv_obj_set_style_border_opa(dot, LV_OPA_COVER, 0);      // visible
 
-    lv_obj_align(dot, LV_ALIGN_TOP_RIGHT, x - 10, y + 20);
+    lv_obj_align(dot, LV_ALIGN_TOP_MID,240 -x, y);
     lv_obj_move_background(dot);
 
 }
@@ -46,10 +46,18 @@ void draw_sleet_ui(lv_obj_t *tile)
 
     // ----- Cloud -----
     lv_obj_t *cloud = lv_obj_create(tile);
-    lv_obj_set_size(cloud, 480, 110);
+    lv_obj_set_size(cloud, 480, 40);
     lv_obj_set_style_bg_color(cloud, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_radius(cloud, 60, 0);
-    lv_obj_align(cloud, LV_ALIGN_TOP_MID, 0, -40);
+    lv_obj_align(cloud, LV_ALIGN_TOP_MID, 0, 60);
+    lv_obj_set_style_border_color(cloud,lv_color_hex(0xFFFFFF),0);
+
+    lv_obj_t *cloud2 = lv_obj_create(tile);
+    lv_obj_set_size(cloud2, 300, 40);
+    lv_obj_set_style_bg_color(cloud2, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_set_style_radius(cloud2, 40, 0);
+    lv_obj_align(cloud2, LV_ALIGN_TOP_MID, 20, 40);
+    lv_obj_set_style_border_color(cloud2,lv_color_hex(0xFFFFFF),0);
 
     // ----- Temperature box -----
     lv_obj_t *temp_box = lv_obj_create(tile);
