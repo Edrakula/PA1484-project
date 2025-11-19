@@ -18,7 +18,7 @@ void draw_weather_ui(lv_obj_t *tile) {
 
     // --- Beskrivning ---
     lv_obj_t *desc_label = lv_label_create(tile);
-    lv_label_set_text(desc_label, "Soligt");
+    lv_label_set_text(desc_label, "Sunny");
     lv_obj_set_style_text_font(desc_label, &lv_font_montserrat_28, 0);
     lv_obj_align(desc_label, LV_ALIGN_LEFT_MID, 20, 20);
 
