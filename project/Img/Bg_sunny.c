@@ -18,12 +18,6 @@ void draw_sunny_ui(lv_obj_t *tile)
     lv_obj_set_style_bg_color(sun, lv_color_hex(0xFFD726), 0);
     lv_obj_align(sun, LV_ALIGN_TOP_RIGHT, -40, 40);
 
-    // ----- Cloud -----
-    lv_obj_t *cloud = lv_obj_create(tile);
-    lv_obj_set_size(cloud, 220, 90);
-    lv_obj_set_style_radius(cloud, 50, 0);
-    lv_obj_set_style_bg_color(cloud, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_align(cloud, LV_ALIGN_TOP_LEFT, 20, 80);
 
     // ----- Temperature box -----
     lv_obj_t *temp_box = lv_obj_create(tile);
@@ -45,7 +39,7 @@ void draw_sunny_ui(lv_obj_t *tile)
     lv_obj_t *cond_label = lv_label_create(tile);
     lv_label_set_text(cond_label, "Sunny");
     lv_obj_set_style_text_font(cond_label, &lv_font_montserrat_28, 0);
-    lv_obj_set_style_text_color(cond_label, text_color, 0);
+    lv_obj_set_style_text_color(cond_label, lv_color_hex(0x000000), 0);
     lv_obj_align(cond_label, LV_ALIGN_LEFT_MID, 25, 30);
 
     // ----- City name -----
