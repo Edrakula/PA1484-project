@@ -17,14 +17,22 @@ static void create_sleet_drop(lv_obj_t *parent, lv_coord_t x, lv_coord_t y)
     lv_obj_set_style_bg_color(line, lv_color_hex(0xAEE6FF), 0);
     lv_obj_set_style_border_width(line, 0, 0);
     lv_obj_align(line, LV_ALIGN_TOP_LEFT, x, y);
+    lv_obj_move_background(line);
 
     // dot
     lv_obj_t *dot = lv_obj_create(parent);
     lv_obj_set_size(dot, 6, 6);
     lv_obj_set_style_radius(dot, LV_RADIUS_CIRCLE, 0);
-    lv_obj_set_style_bg_color(dot, lv_color_hex(0xAEE6FF), 0);
-    lv_obj_set_style_border_width(dot, 0, 0);
-    lv_obj_align(dot, LV_ALIGN_TOP_LEFT, x - 1, y + 14);
+    lv_obj_set_style_bg_color(dot, lv_color_hex(0x000000), 0);
+
+    // ----- Border (black) -----
+    lv_obj_set_style_border_width(dot, 2, 0);               // thickness
+    lv_obj_set_style_border_color(dot, lv_color_hex(0x000000), 0); // black
+    lv_obj_set_style_border_opa(dot, LV_OPA_COVER, 0);      // visible
+
+    lv_obj_align(dot, LV_ALIGN_TOP_RIGHT, x - 10, y + 20);
+    lv_obj_move_background(dot);
+
 }
 
 void draw_sleet_ui(lv_obj_t *tile)
