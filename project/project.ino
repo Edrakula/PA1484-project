@@ -95,8 +95,8 @@ static void connect_wifi() {
   }
 }
 
-std::vector<ForecastTemp> forecastTemps;
-std::vector<HistoricData> historicData;
+static std::vector<ForecastTemp> forecastTemps;
+static std::vector<HistoricData> historicData;
 
 // Must have function: Setup is run once on startup
 void setup() {
@@ -121,8 +121,7 @@ void setup() {
     if (!err) {
       update_temperatures(forecastTemps);
     } else {
-      //lv_label_set_text(t1_label, err.msg.c_str());
-      //lv_obj_set_size(t1_label,lv_disp_get_hor_res(NULL),lv_disp_get_ver_res(NULL));
+      Serial.println(err.msg.c_str());
     }
 
     err = Error();    
@@ -132,14 +131,13 @@ void setup() {
     Serial.println("got historic data");
     if (!err) {
       Serial.println(historicData[0].date.ymdhms().c_str());
-      populateGraph(historicData);
+      populateGraph(&historicData);
     } else {
-      
+      Serial.println(err.msg.c_str());
     }
     
   } else {
-
-    
+    Serial.println("No wifi");
   }
 }
 
