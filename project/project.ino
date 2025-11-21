@@ -10,7 +10,7 @@
 #include "apiconnections.hpp"
 #include "boot_screen.hpp"
 #include "historic_data_screen.hpp"
-#include "Img/Bg_sleet.hpp"
+#include "Img/Bg_sunny.hpp"
 
 static const String VERSION = "1.0";
 
@@ -67,7 +67,7 @@ static void create_ui() {
 
   // Tile #1
   {
-    draw_sleet_ui(t1);
+    draw_sunny_ui(t1);
   }
 
   // Tile #2

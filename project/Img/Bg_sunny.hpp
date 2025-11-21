@@ -5,6 +5,8 @@
 #include <string>
 
 lv_obj_t *temperatures[7];
+lv_obj_t *daysLabels[7]; 
+const char *days[7] = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
 lv_obj_t *temp_label;
 
 void draw_sunny_ui(lv_obj_t *tile)
@@ -63,15 +65,14 @@ void draw_sunny_ui(lv_obj_t *tile)
     lv_obj_set_style_border_width(card, 0, 0);
     lv_obj_align(card, LV_ALIGN_BOTTOM_MID, 0, -40);
 
-    const char *days[7] = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
     int x = 20;
 
     for (int i = 0; i < 7; i++) {
         // day name
-        lv_obj_t *lbl = lv_label_create(card);
-        lv_label_set_text(lbl, days[i]);
-        lv_obj_set_style_text_color(lbl, text_color, 0);
-        lv_obj_align(lbl, LV_ALIGN_TOP_LEFT, x, 10);
+        daysLabels[i] = lv_label_create(card);
+        lv_label_set_text(daysLabels[i], days[i]);
+        lv_obj_set_style_text_color(daysLabels[i], text_color, 0);
+        lv_obj_align(daysLabels[i], LV_ALIGN_TOP_LEFT, x, 10);
 
         // small temperature
         temperatures[i] = lv_label_create(card);
@@ -107,6 +108,7 @@ void update_temperatures(std::vector<ForecastTemp> forecastTemps) {
         std::string s = oss.str();
 
         lv_label_set_text(t, (s + "°").c_str());
+        lv_label_set_text(daysLabels[i], days[(forecastTemps[i].date.weekday() + i) % 7]);
     }
 
 }

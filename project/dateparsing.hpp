@@ -30,6 +30,29 @@ struct Date {
 
 		return std::string(buf);
 	}
+
+	// Returns: 0 = Monday ... 6 = Sunday
+	int weekday() {
+		int new_year = year;
+		int new_month = month;
+    	if (new_month == 1) {       // January
+    	    new_month = 13;
+    	    new_year--;
+    	} else if (new_month == 2) { // February
+    	    new_month = 14;
+    	    new_year--;
+    	}
+
+    	int q = day;
+    	int m = new_month;
+    	int K = new_year % 100;
+    	int J = new_year / 100;
+
+    	int h = (q + (13*(m + 1))/5 + K + K/4 + J/4 + 5*J) % 7;
+    	return (h+5)%7; 
+	}
+
+
 };
 
 // example ISO8601 date 2025-11-06T15:00:00Z
