@@ -71,6 +71,7 @@ lv_obj_t* create_slider_that_updates_label_based_on_historic_data(lv_obj_t* tile
   
   lv_obj_align(slider, LV_ALIGN_BOTTOM_MID, 0,-15);
   lv_slider_set_range(slider, 0, length_of_slider);
+  lv_obj_set_style_radius(slider, 10, LV_PART_KNOB);
   
   static slider_info_t info;
   info.label = label;
