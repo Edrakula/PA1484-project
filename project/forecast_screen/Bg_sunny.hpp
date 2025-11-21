@@ -1,13 +1,19 @@
 #include "lvgl.h"
-#include "apiconnections.hpp"
+#include "backend_logic/apiconnections.hpp"
 #include <sstream>
 #include <iomanip>
 #include <string>
+#include "small_icons/sunny_icon.hpp"
+#include "small_icons/snow_icon.hpp"
+#include "small_icons/cloud_icon.hpp"
+#include "small_icons/rain_icon.hpp"
+#include <algorithm>
 
 lv_obj_t *temperatures[7];
 lv_obj_t *daysLabels[7]; 
 const char *days[7] = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
 lv_obj_t *temp_label;
+lv_obj_t *card;
 
 void draw_sunny_ui(lv_obj_t *tile)
 {
@@ -58,7 +64,7 @@ void draw_sunny_ui(lv_obj_t *tile)
     lv_obj_align(city_label, LV_ALIGN_TOP_MID, 0, 10);
 
     // ----- Weekly forecast card -----
-    lv_obj_t *card = lv_obj_create(tile);
+    card = lv_obj_create(tile);
     lv_obj_set_size(card, 420, 120);
     lv_obj_set_style_bg_color(card, lv_color_hex(0x3A3A3A), 0);
     lv_obj_set_style_radius(card, 25, 0);
@@ -85,8 +91,9 @@ void draw_sunny_ui(lv_obj_t *tile)
     }
 }
 
-void update_temperatures(std::vector<ForecastTemp> forecastTemps) {
+void update_temperatures(std::vector<ForecastTemp> forecastTemps, lv_obj_t* tile) {
     int y = 7;
+    size_t forecastTempsSize = forecastTemps.size();
     if (forecastTemps.size() < 7) {
         y = forecastTemps.size();
     }
@@ -98,8 +105,17 @@ void update_temperatures(std::vector<ForecastTemp> forecastTemps) {
 
     lv_label_set_text(temp_label, (s0 + "°").c_str()); 
 
-    for (int i = 0; i < 7; i++) {
+    int x = 22;
+
+    for (int i = 0; i < y; i++) {
         lv_obj_t *t = temperatures[i];
+
+        ForecastTemp curr_temp = forecastTemps[i];
+
+        if (curr_temp.snowProbability > 0.5) get_snow_icon(card, x);
+        else if (curr_temp.rainProbability > 0.5) get_rain_icon(card, x);
+        else if (curr_temp.cloudAreaFraction > 4) get_cloud_icon(card, x);
+        else get_sunny_icon(card, x);
 
 
         std::ostringstream oss;
@@ -108,7 +124,10 @@ void update_temperatures(std::vector<ForecastTemp> forecastTemps) {
         std::string s = oss.str();
 
         lv_label_set_text(t, (s + "°").c_str());
-        lv_label_set_text(daysLabels[i], days[(forecastTemps[i].date.weekday() + i) % 7]);
+        Serial.println((forecastTemps[i].date.ymdhms() + " : " + std::to_string(forecastTemps[i].date.weekday())).c_str());
+        lv_label_set_text(daysLabels[i], days[forecastTemps[i].date.weekday() % 7]);
+
+        x += 55;
     }
 
 }

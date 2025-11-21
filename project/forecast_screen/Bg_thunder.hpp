@@ -1,5 +1,5 @@
 #include "lvgl.h"
-#include "apiconnections.hpp"
+#include "backend_logic/apiconnections.hpp"
 #include <sstream>
 #include <iomanip>
 #include <string>
@@ -24,7 +24,7 @@ static void create_raindrop(lv_obj_t *parent, lv_coord_t x, lv_coord_t y)
     lv_obj_move_background(drop);
 }
 
-void draw_rainy_ui(lv_obj_t *tile)
+void draw_thunder_ui(lv_obj_t *tile)
 {
     lv_color_t text_color = lv_color_hex(0xFFFFFF);
 
@@ -66,7 +66,7 @@ void draw_rainy_ui(lv_obj_t *tile)
 
     // ----- Condition text -----
     lv_obj_t *cond_label = lv_label_create(tile);
-    lv_label_set_text(cond_label, "Rainy");
+    lv_label_set_text(cond_label, "Thunder");
     lv_obj_set_style_text_font(cond_label, &lv_font_montserrat_28, 0);
     lv_obj_set_style_text_color(cond_label, lv_color_hex(0x000000), 0);
     lv_obj_align(cond_label, LV_ALIGN_LEFT_MID, 25, 30);

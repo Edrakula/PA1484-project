@@ -9,8 +9,8 @@
 #include <lvgl.h>
 #include <vector>
 
-#include "apiconnections.hpp"
-#include "historic_data_screen_slider.hpp"
+#include "backend_logic/apiconnections.hpp"
+#include "historic_data_screen/historic_data_screen_slider.hpp"
 
 std::pair<int,int> get_xy_dist_from_center_of_chart_point(int x_index, int y_value, int y_max);
 

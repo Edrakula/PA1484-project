@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "dateparsing.hpp"
+#include "backend_logic/dateparsing.hpp"
 #include "simple_error_struct.hpp"
 
 #include <HTTPClient.h>
@@ -257,7 +257,7 @@ std::vector<ForecastTemp> getForecastFromLongAndLat(std::string longitude, std::
 
 	size_t datesAmount = dates.size();
 
-	
+	bool first_added = false;
 
 	for (size_t i = 0; i < datesAmount; i++) {
 		ForecastTemp temp;
@@ -267,6 +267,9 @@ std::vector<ForecastTemp> getForecastFromLongAndLat(std::string longitude, std::
 			return {};
 		}
 		if (!(i == 0 || temp.date.hour == 12)) continue;
+		if (!first_added && i == 0 && temp.date.hour < 12) continue;
+		first_added = true;
+
 		temp.windDirection = data["wind_from_direction"].as<float>();
 		temp.windSpeed = data["wind_speed"].as<float>();
 		temp.temp = data["air_temperature"].as<float>();

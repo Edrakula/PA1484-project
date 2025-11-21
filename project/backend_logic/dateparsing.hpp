@@ -15,6 +15,8 @@ struct Date {
 	int minute = 0;
 	int second = 0;
 
+	int weekDayNow = 0;
+
 	// date as YYYY-MM-DD
 	std::string ymd() {
 		char buf[32];
@@ -49,6 +51,7 @@ struct Date {
     	int J = new_year / 100;
 
     	int h = (q + (13*(m + 1))/5 + K + K/4 + J/4 + 5*J) % 7;
+		weekDayNow = (h+5)%7; 
     	return (h+5)%7; 
 	}
 

@@ -7,7 +7,7 @@
 #include <LilyGo_AMOLED.h>
 #include <TFT_eSPI.h>
 #include <lvgl.h>
-#include "apiconnections.hpp"
+#include "backend_logic/apiconnections.hpp"
 #include <sstream>
 #include <iomanip>
 #include <string>

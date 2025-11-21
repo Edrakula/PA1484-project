@@ -7,10 +7,10 @@
 #include <LilyGo_AMOLED.h>
 #include <LV_Helper.h>
 #include <lvgl.h>
-#include "apiconnections.hpp"
+#include "backend_logic/apiconnections.hpp"
 #include "boot_screen.hpp"
-#include "historic_data_screen.hpp"
-#include "Img/Bg_sunny.hpp"
+#include "historic_data_screen/historic_data_screen.hpp"
+#include "forecast_screen/Bg_sunny.hpp"
 
 static const String VERSION = "1.0";
 
@@ -119,7 +119,7 @@ void setup() {
     forecastTemps = getForecastFromLongAndLat(LONGITUDE, LATITUDE, err);
     Serial.println("got forecastData");
     if (!err) {
-      update_temperatures(forecastTemps);
+      update_temperatures(forecastTemps, t1);
     } else {
       Serial.println(err.msg.c_str());
     }
