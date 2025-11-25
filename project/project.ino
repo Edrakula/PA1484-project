@@ -26,6 +26,7 @@ static lv_obj_t* t2;
 
 static lv_obj_t* bootScreen;
 
+static lv_obj_t* settingsScreen;
 
 static lv_obj_t* t1_label;
 static lv_obj_t* t2_label;
@@ -59,6 +60,7 @@ static void create_ui() {
   t1 = lv_tileview_add_tile(tileview, 1, 0, LV_DIR_HOR);
   t2 = lv_tileview_add_tile(tileview, 2, 0, LV_DIR_HOR);
   bootScreen = lv_tileview_add_tile(tileview, 0,0, LV_DIR_HOR);
+  settingsScreen = lv_tileview_add_tile(tileview, 3, 0, LV_DIR_HOR);
 
   // BOOT SCREEN
   {
