@@ -11,6 +11,7 @@
 #include "boot_screen.hpp"
 #include "historic_data_screen/historic_data_screen.hpp"
 #include "forecast_screen/Bg_sunny.hpp"
+#include "settings_screen.hpp"
 
 static const String VERSION = "1.0";
 
@@ -75,6 +76,11 @@ static void create_ui() {
   // Tile #2
   {
     CreateHistoricDataScreen(tileview, t2);
+  }
+
+  //Settings Screen.
+  {
+    create_settings_screen(tileview, settingsScreen);
   }
 }
 
