@@ -64,7 +64,7 @@ lv_obj_t* create_settings_screen(lv_obj_t* tileview, lv_obj_t* tile)
     std::string settings_text = "Settings";
     lv_obj_t* settings_label1 = lv_label_create(tile);
     lv_label_set_text(settings_label1, settings_text.c_str());
-    lv_obj_set_style_text_font(settings_label1, &lv_font_montserrat_40, LV_PART_MAIN);
+    lv_obj_set_style_text_font(settings_label1, &lv_font_montserrat_32, LV_PART_MAIN);
     lv_obj_align(settings_label1, LV_ALIGN_TOP_MID, 0, 0);
 
     //Weather dropdown.
