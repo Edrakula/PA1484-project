@@ -85,6 +85,8 @@ lv_obj_t* create_settings_screen(lv_obj_t* tileview, lv_obj_t* tile)
         "Kiruna"
     );
 
+    lv_obj_align(cityDropdown, LV_ALIGN_CENTER, 0, 0);
+
     lv_obj_add_event_cb(cityDropdown, city_dropdown_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
     return cityDropdown;
