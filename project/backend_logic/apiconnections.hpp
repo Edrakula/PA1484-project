@@ -15,6 +15,8 @@
 #include <ArduinoJson.h>
 #include <LilyGo_AMOLED.h>
 
+#define DEBUG
+
 const std::string STATION_ID = "65090";
 const std::string LONGITUDE = "15.586710";
 const std::string LATITUDE = "56.160820";
@@ -88,27 +90,46 @@ void dezerializeJson(JsonDocument& doc, const std::string& payload, Error& err) 
 	}
 }
 
-std::vector<std::pair<std::string, std::string>> getAllStations(Error& err) {
+struct StationData{
+	std::string name = "";
+	int id = -1;
+	float longitude = 1000;
+	float latitude = 1000;
+
+};
+
+std::vector<StationData> getAllStations(Error& err) {
+	Serial.println("start making request");
 	std::string payload =
 	    makeRequest("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/1/station.json", err);
 	JsonDocument doc;
+	Serial.println("start json serialization");
 	dezerializeJson(doc, payload, err);
 	if (err) {
 		return {};
 	}
 
+	Serial.println("Start going thru stations");
+
 	JsonArray stations = doc["station"];
-	std::vector<std::pair<std::string, std::string>> out = {};
+	std::vector<StationData> out = {};
 	for (size_t i = 0; i < stations.size(); ++i) {
-		std::pair<std::string, std::string> station;
+		StationData station;
 		JsonString stationName = stations[i]["title"];
-		JsonString stationKey = stations[i]["key"];
-		station.first = std::string(stationName.c_str());
-		station.second = std::string(stationKey.c_str());
+		JsonInteger stationKey = stations[i]["key"];
+		JsonFloat stationLatitude = stations[i]["latitude"];
+		JsonFloat stationLongitude = stations[i]["longitude"];
+		station.name = std::string(stationName.c_str()).substr(17);
+		Serial.println(station.name.c_str());
+		station.id = stationKey;
+		station.latitude = stationLatitude;
+		station.longitude = stationLongitude;
+		
 		out.push_back(station);
 	}
 	return out;
 }
+
 
 struct HistoricData {
 	Date date;

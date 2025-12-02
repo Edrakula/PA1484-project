@@ -31,6 +31,7 @@ static lv_obj_t* settingsScreen;
 
 static lv_obj_t* t1_label;
 static lv_obj_t* t2_label;
+static lv_obj_t* cityDropdown;
 static bool t2_dark = false;  // start tile #2 in light mode
 
 // Function: Tile #2 Color change
@@ -51,6 +52,17 @@ static void on_tile2_clicked(lv_event_t* e) {
 
 // Function: Creates UI
 static void create_ui() {
+
+  lv_style_t style_global;
+  lv_style_init(&style_global);
+  lv_style_set_text_font(&style_global, &lv_font_montserrat_16);
+
+  lv_obj_add_style(lv_scr_act(), &style_global, 0);  
+  lv_obj_add_style(lv_layer_top(), &style_global, 0); 
+  lv_obj_add_style(lv_layer_sys(), &style_global, 0);
+  
+
+
   // Fullscreen Tileview
   tileview = lv_tileview_create(lv_scr_act());
   lv_obj_set_size(tileview, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL));
@@ -80,7 +92,7 @@ static void create_ui() {
 
   //Settings Screen.
   {
-    create_settings_screen(tileview, settingsScreen);
+    cityDropdown = create_settings_screen(tileview, settingsScreen);
   }
 }
 
@@ -144,6 +156,13 @@ void setup() {
       Serial.println(err.msg.c_str());
     }
     
+    err = Error(); 
+    std::vector<StationData> stations = getAllStations(err);
+
+    if (!err){
+      populate_settings_screen_with_cities(cityDropdown, stations);
+    }
+
   } else {
     Serial.println("No wifi");
   }

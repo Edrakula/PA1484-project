@@ -11,33 +11,8 @@
 #include <LV_Helper.h>
 #include <lvgl.h>
 
-void create_settings_screen(lv_obj_t* tileview, lv_obj_t* tile)
-{
-    //Weather dropdown.
-    lv_obj_t* weatherDropdown = lv_dropdown_create(tile);
-    lv_dropdown_set_options(
-        weatherDropdown,
-        "Temperature\n"
-        "Humidity\n"
-        "Wind speed\n"
-        "Air pressure"
-    );
+#include "backend_logic/apiconnections.hpp"
 
-    lv_obj_add_event_cb(weatherDropdown, weather_dropdown_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
-
-    //City dropdown.
-    lv_obj_t* cityDropdown = lv_dropdown_create(tile);
-    lv_dropdown_set_options(
-        cityDropdown,
-        "Karlskrona\n"
-        "Stockholm\n"
-        "Göteborg\n"
-        "Malmö\n"
-        "Kiruna"
-    );
-
-    lv_obj_add_event_cb(cityDropdown, city_dropdown_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
-}
 
 void weather_dropdown_event_cb(lv_event_t* event)
 {
@@ -83,5 +58,54 @@ void city_dropdown_event_cb(lv_event_t* event)
             break;
     }
 }
+
+lv_obj_t* create_settings_screen(lv_obj_t* tileview, lv_obj_t* tile)
+{
+    //Weather dropdown.
+    lv_obj_t* weatherDropdown = lv_dropdown_create(tile);
+    lv_dropdown_set_options(
+        weatherDropdown,
+        "Temperature\n"
+        "Humidity\n"
+        "Wind speed\n"
+        "Air pressure"
+    );
+
+    lv_obj_add_event_cb(weatherDropdown, weather_dropdown_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+
+    //City dropdown.
+    lv_obj_t* cityDropdown = lv_dropdown_create(tile);
+
+    lv_dropdown_set_options(
+        cityDropdown,
+        "Karlskrona\n"
+        "Stockholm\n"
+        "Göteborg\n"
+        "Malmö\n"
+        "Kiruna"
+    );
+
+    lv_obj_add_event_cb(cityDropdown, city_dropdown_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+
+    return cityDropdown;
+
+}
+
+void populate_settings_screen_with_cities(lv_obj_t* cityDropdown, std::vector<StationData> stations) {
+    
+    std::string cities_options_str = "";
+    size_t stations_size = stations.size();
+    for (size_t i = 0; i < stations_size-1; i++){
+        cities_options_str += stations[i].name + "\n";
+    }
+    cities_options_str += stations[stations_size-1].name;
+
+    lv_dropdown_set_options(
+        cityDropdown,
+        cities_options_str.c_str()
+    );
+
+}
+
 
 #endif
