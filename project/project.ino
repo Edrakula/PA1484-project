@@ -7,11 +7,14 @@
 #include <LilyGo_AMOLED.h>
 #include <LV_Helper.h>
 #include <lvgl.h>
+
 #include "backend_logic/apiconnections.hpp"
 #include "boot_screen.hpp"
 #include "historic_data_screen/historic_data_screen.hpp"
 #include "forecast_screen/Bg_sunny.hpp"
 #include "settings_screen.hpp"
+
+#include <Preferences.h>
 
 static const String VERSION = "1.0";
 
@@ -29,26 +32,60 @@ static lv_obj_t* bootScreen;
 
 static lv_obj_t* settingsScreen;
 
-static lv_obj_t* t1_label;
-static lv_obj_t* t2_label;
 static lv_obj_t* cityDropdown;
-static bool t2_dark = false;  // start tile #2 in light mode
 
-// Function: Tile #2 Color change
-static void apply_tile_colors(lv_obj_t* tile, lv_obj_t* label, bool dark) {
-  // Background
-  lv_obj_set_style_bg_opa(tile, LV_OPA_COVER, 0);
-  lv_obj_set_style_bg_color(tile, dark ? lv_color_black() : lv_color_white(), 0);
+static lv_obj_t* forecastDataCityLabel;
+static lv_obj_t* historicDataCityLabel;
 
-  // Text
-  lv_obj_set_style_text_color(label, dark ? lv_color_white() : lv_color_black(), 0);
+static StationData currStation;
+static HistoricDataParameters currParam;
+
+static std::vector<ForecastTemp> forecastTemps;
+static std::vector<HistoricData> historicData;
+
+
+static void updateHistoricDataBasedOnNewParam(const HistoricDataParameters& param) {
+  currParam = param;
+  Serial.println("getting historic data");
+  Error err;
+  historicData = getHistoricDataFromId(currStation.id, param, err);
+  Serial.println("got historic data");
+  if (!err) {
+    Serial.println(historicData[0].date.ymdhms().c_str());
+    populateGraph(&historicData);
+  } else {
+    Serial.println(err.msg.c_str());
+  }
 }
 
-static void on_tile2_clicked(lv_event_t* e) {
-  LV_UNUSED(e);
-  t2_dark = !t2_dark;
-  apply_tile_colors(t2, t2_label, t2_dark);
+static void updateAllTilesBasedOnStation(const StationData& stationData) {
+  currStation = stationData;
+  Error err;
+  Serial.println("getting forcastData");
+  forecastTemps = getForecastFromLongAndLat(stationData.longitude, stationData.latitude, err);
+  Serial.println("got forecastData");
+  if (!err) {
+    update_temperatures(forecastTemps, t1);
+  } else {
+    Serial.println(err.msg.c_str());
+  }
+  err = Error();    
+  
+  Serial.println("getting historic data");
+  historicData = getHistoricDataFromId(stationData.id, HISTORIC_TEMP, err);
+  Serial.println("got historic data");
+  if (!err) {
+    Serial.println(historicData[0].date.ymdhms().c_str());
+    populateGraph(&historicData);
+  } else {
+    Serial.println(err.msg.c_str());
+  }
+
+  lv_label_set_text(forecastDataCityLabel, stationData.name.c_str());
+  lv_label_set_text(historicDataCityLabel, stationData.name.c_str());
+
 }
+
 
 // Function: Creates UI
 static void create_ui() {
@@ -82,17 +119,17 @@ static void create_ui() {
 
   // Tile #1
   {
-    draw_sunny_ui(t1);
+    forecastDataCityLabel = draw_sunny_ui(t1);
   }
 
   // Tile #2
   {
-    CreateHistoricDataScreen(tileview, t2);
+    historicDataCityLabel = CreateHistoricDataScreen(tileview, t2);
   }
 
   //Settings Screen.
   {
-    cityDropdown = create_settings_screen(tileview, settingsScreen);
+    cityDropdown = create_settings_screen(tileview, settingsScreen, updateAllTilesBasedOnStation, updateHistoricDataBasedOnNewParam);
   }
 }
 
@@ -115,9 +152,6 @@ static void connect_wifi() {
   }
 }
 
-static std::vector<ForecastTemp> forecastTemps;
-static std::vector<HistoricData> historicData;
-
 // Must have function: Setup is run once on startup
 void setup() {
   Serial.begin(115200);
@@ -134,9 +168,13 @@ void setup() {
   connect_wifi();
 
   if (WiFi.status() == WL_CONNECTED) {
+
+    currStation = STATIONS[0];
+    currParam = HISTORIC_TEMP;
+
     Error err;
     Serial.println("getting forcastData");
-    forecastTemps = getForecastFromLongAndLat(LONGITUDE, LATITUDE, err);
+    forecastTemps = getForecastFromLongAndLat(KARLSKRONA_LONGITUDE, KARLSKRONA_LATITUDE, err);
     Serial.println("got forecastData");
     if (!err) {
       update_temperatures(forecastTemps, t1);
@@ -147,7 +185,7 @@ void setup() {
     err = Error();    
     
     Serial.println("getting historic data");
-    historicData = getHistoricDataFromId(STATION_ID, HISTORIC_TEMP, err);
+    historicData = getHistoricDataFromId(KARLSKRONA_STATION_ID, HISTORIC_TEMP, err);
     Serial.println("got historic data");
     if (!err) {
       Serial.println(historicData[0].date.ymdhms().c_str());
@@ -157,10 +195,11 @@ void setup() {
     }
     
     err = Error(); 
-    std::vector<StationData> stations = getAllStations(err);
+    // std::vector<StationData> stations = getAllStations(err);
 
     if (!err){
-      populate_settings_screen_with_cities(cityDropdown, stations);
+      err = Error();
+      // populate_settings_screen_with_cities(cityDropdown, &stations, "Karlskrona Söderstjerna", updateAllTilesBasedOnStation, err);
     }
 
   } else {

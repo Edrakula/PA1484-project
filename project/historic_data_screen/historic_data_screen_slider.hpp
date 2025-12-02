@@ -49,7 +49,7 @@ static void slider_event_cb_with_historic_data_and_label(lv_event_t * e)
     oss << std::fixed << std::setprecision(1) << cur_data_point.data;
     std::string s = oss.str();
       
-    lv_label_set_text(info->label, (cur_data_point.date.ymd() + " : " + s + " " + cur_data_point.unit).c_str());
+    lv_label_set_text(info->label, (cur_data_point.date.ymdhms() + " : " + s + " " + cur_data_point.unit).c_str());
 
     lv_obj_center(info->red_dot);
     lv_obj_align(info->red_dot, LV_ALIGN_CENTER, cords.first, cords.second);
@@ -73,6 +73,7 @@ lv_obj_t* create_slider_that_updates_label_based_on_historic_data(lv_obj_t* tile
   lv_slider_set_range(slider, 0, length_of_slider);
   lv_obj_set_style_radius(slider, 10, LV_PART_KNOB);
   
+
   static slider_info_t info;
   info.label = label;
   info.data = data;

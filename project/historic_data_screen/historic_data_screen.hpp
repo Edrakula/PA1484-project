@@ -49,7 +49,7 @@ static void chart_event_cb(lv_event_t * e)
 
 
 
-void CreateHistoricDataScreen(lv_obj_t *TILE_VIEW, lv_obj_t *TILE) {
+lv_obj_t* CreateHistoricDataScreen(lv_obj_t *TILE_VIEW, lv_obj_t *TILE) {
     
     // ----- City name -----
     city_label_history = lv_label_create(TILE);
@@ -138,6 +138,7 @@ void CreateHistoricDataScreen(lv_obj_t *TILE_VIEW, lv_obj_t *TILE) {
     lv_obj_center(max_date_label);
     lv_obj_align(max_date_label, LV_ALIGN_CENTER, (CHART_WIDTH/2 + CHART_PADDING), CHART_HEIGHT/2 + CHART_PADDING + 10);
 
+    return city_label_history;
 }
 
 std::pair<int,int> get_xy_dist_from_center_of_chart_point(int x_index, int y_value, int y_max) {

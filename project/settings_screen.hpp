@@ -14,52 +14,52 @@
 #include "backend_logic/apiconnections.hpp"
 
 
+typedef struct {
+    void (*updateHistoricParam)(const HistoricDataParameters&) = nullptr;
+} param_info_t;
+
 void weather_dropdown_event_cb(lv_event_t* event)
 {
     lv_obj_t* dropDownObject = lv_event_get_target(event);
     uint16_t selected = lv_dropdown_get_selected(dropDownObject);
+    
+    param_info_t* info = (param_info_t *) lv_event_get_user_data(event);
+
     switch (selected)
     {
         case 0:
             //Visa temperature.
+            if (info->updateHistoricParam != nullptr) info->updateHistoricParam(HISTORIC_TEMP);
             break;
         case 1:
             //Visa humidity.
+            if (info->updateHistoricParam != nullptr) info->updateHistoricParam(HISTORIC_HUMIDITY);
             break;
         case 2:
             //Visa wind speed.
+            if (info->updateHistoricParam != nullptr) info->updateHistoricParam(HISTORIC_WIND_SPEED);
             break;
         case 3:
             //Visa air pressure.
+            if (info->updateHistoricParam != nullptr) info->updateHistoricParam(HISTORIC_AIR_PRESSURE);
             break;
     }
 }
 
-void city_dropdown_event_cb(lv_event_t* event)
-{
+typedef struct {
+    void (*updateAllTiles)(const StationData&) = nullptr;
+} city_info_t;
+
+void city_dropdown_event_cb(lv_event_t* event) {
     lv_obj_t* dropdownObject = lv_event_get_target(event);
     uint16_t selected = lv_dropdown_get_selected(dropdownObject);
-    switch (selected)
-    {
-        case 0:
-            //Visa Karlskrona.
-            break;
-        case 1:
-            //Visa Stockholm.
-            break;
-        case 2:
-            //Visa Göteborg.
-            break;
-        case 3:
-            //Visa Malmö.
-            break;
-        case 4:
-            //Visa Kiruna.
-            break;
-    }
+    
+    city_info_t* info = (city_info_t *) lv_event_get_user_data(event);
+
+    if (info->updateAllTiles != nullptr) info->updateAllTiles(STATIONS[selected]);
 }
 
-lv_obj_t* create_settings_screen(lv_obj_t* tileview, lv_obj_t* tile)
+lv_obj_t* create_settings_screen(lv_obj_t* tileview, lv_obj_t* tile, void (*updateAllTiles)(const StationData&), void (*updateHistoricParam)(const HistoricDataParameters&))
 {
     std::string settings_text = "Settings";
     lv_obj_t* settings_label1 = lv_label_create(tile);
@@ -79,23 +79,32 @@ lv_obj_t* create_settings_screen(lv_obj_t* tileview, lv_obj_t* tile)
 
     lv_obj_align(weatherDropdown, LV_ALIGN_CENTER, 200, 0);
 
-    lv_obj_add_event_cb(weatherDropdown, weather_dropdown_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    static param_info_t param_info;
+    param_info.updateHistoricParam = updateHistoricParam;
+
+    lv_obj_add_event_cb(weatherDropdown, weather_dropdown_event_cb, LV_EVENT_VALUE_CHANGED, &param_info);
 
     //City dropdown.
     lv_obj_t* cityDropdown = lv_dropdown_create(tile);
 
+    std::string cities_options_str = "";
+    for (size_t i = 0; i < 4; i++){
+        cities_options_str += STATIONS[i].name + "\n";
+    }
+    cities_options_str += STATIONS[4].name;
+
     lv_dropdown_set_options(
         cityDropdown,
-        "Karlskrona\n"
-        "Stockholm\n"
-        "Göteborg\n"
-        "Malmö\n"
-        "Kiruna"
+        cities_options_str.c_str()
     );
 
-    lv_obj_align(cityDropdown, LV_ALIGN_CENTER, -200, 0);
+    
+    static city_info_t info;
+    info.updateAllTiles = updateAllTiles;
 
-    lv_obj_add_event_cb(cityDropdown, city_dropdown_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_add_event_cb(cityDropdown, city_dropdown_event_cb, LV_EVENT_VALUE_CHANGED, &info);
+    
+    lv_obj_align(cityDropdown, LV_ALIGN_CENTER, -200, 0);
 
     return cityDropdown;
 
@@ -119,3 +128,4 @@ void populate_settings_screen_with_cities(lv_obj_t* cityDropdown, std::vector<St
 
 
 #endif
+

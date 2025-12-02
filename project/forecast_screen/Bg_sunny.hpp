@@ -15,7 +15,7 @@ const char *days[7] = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
 lv_obj_t *temp_label;
 lv_obj_t *card;
 
-void draw_sunny_ui(lv_obj_t *tile)
+lv_obj_t* draw_sunny_ui(lv_obj_t *tile)
 {
     // common text color
     lv_color_t text_color = lv_color_hex(0xFFFFFF);
@@ -89,6 +89,8 @@ void draw_sunny_ui(lv_obj_t *tile)
 
         x += 55;
     }
+
+    return city_label;
 }
 
 void update_temperatures(std::vector<ForecastTemp> forecastTemps, lv_obj_t* tile) {
