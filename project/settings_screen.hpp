@@ -77,6 +77,8 @@ lv_obj_t* create_settings_screen(lv_obj_t* tileview, lv_obj_t* tile)
         "Air pressure"
     );
 
+    lv_obj_align(weatherDropdown, LV_ALIGN_CENTER, 200, 0);
+
     lv_obj_add_event_cb(weatherDropdown, weather_dropdown_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
     //City dropdown.
@@ -91,7 +93,7 @@ lv_obj_t* create_settings_screen(lv_obj_t* tileview, lv_obj_t* tile)
         "Kiruna"
     );
 
-    lv_obj_align(cityDropdown, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_align(cityDropdown, LV_ALIGN_CENTER, -200, 0);
 
     lv_obj_add_event_cb(cityDropdown, city_dropdown_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
