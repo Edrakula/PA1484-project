@@ -140,6 +140,38 @@ void loadDeafultCityBtnOnClick(lv_event_t* event) {
 }
 
 
+void dropdown_select_by_string(lv_obj_t * dd, const char * target) {
+    const char * opts = lv_dropdown_get_options(dd);
+    if(!opts) return;
+
+    char buf[128];
+    int index = 0;
+
+    const char * p = opts;
+    while (*p) {
+        int i = 0;
+
+        /* Extract one option (until newline or end) */
+        while (*p && *p != '\n' && i < sizeof(buf)-1) {
+            buf[i++] = *p++;
+        }
+        buf[i] = '\0';   // null-terminate the option
+
+        /* Compare with target string */
+        if (strcmp(buf, target) == 0) {
+            lv_dropdown_set_selected(dd, index);
+            return;      // found and selected
+        }
+
+        /* Skip newline */
+        if (*p == '\n') p++;
+
+        index++;
+    }
+}
+
+
+
 lv_obj_t* create_settings_screen(lv_obj_t* tileview, lv_obj_t* tile, void (*updateAllTiles)(const StationData&), void (*updateHistoricParam)(const HistoricDataParameters&))
 {
     std::string settings_text = "Settings";
@@ -157,6 +189,22 @@ lv_obj_t* create_settings_screen(lv_obj_t* tileview, lv_obj_t* tile, void (*upda
         "Wind speed\n"
         "Air pressure"
     );
+
+    switch (defaultParam)
+    {
+    case HISTORIC_TEMP:
+        dropdown_select_by_string(weatherDropdown, "Temperature");
+        break;
+    case HISTORIC_HUMIDITY:
+        dropdown_select_by_string(weatherDropdown, "Humidity");
+        break;
+    case HISTORIC_WIND_SPEED:
+        dropdown_select_by_string(weatherDropdown, "Wind speed");
+        break;
+    case HISTORIC_AIR_PRESSURE:
+        dropdown_select_by_string(weatherDropdown, "Air pressure");
+        break;
+    }
 
     lv_obj_align(weatherDropdown, LV_ALIGN_CENTER, 200, 0);
 
@@ -178,6 +226,8 @@ lv_obj_t* create_settings_screen(lv_obj_t* tileview, lv_obj_t* tile, void (*upda
         cityDropdown,
         cities_options_str.c_str()
     );
+
+    dropdown_select_by_string(cityDropdown, defaultStation.name.c_str());
 
     
     static city_info_t info;

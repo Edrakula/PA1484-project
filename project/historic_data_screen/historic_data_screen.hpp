@@ -49,7 +49,7 @@ static void chart_event_cb(lv_event_t * e)
 
 
 
-lv_obj_t* CreateHistoricDataScreen(lv_obj_t *TILE_VIEW, lv_obj_t *TILE, std::string name) {
+lv_obj_t* CreateHistoricDataScreen(lv_obj_t *TILE_VIEW, lv_obj_t *TILE, std::string name, std::string dataTypeStr) {
     
     // ----- City name -----
     city_label_history = lv_label_create(TILE);
@@ -65,7 +65,7 @@ lv_obj_t* CreateHistoricDataScreen(lv_obj_t *TILE_VIEW, lv_obj_t *TILE, std::str
 
     // what data is displayed label
     data_type_label = lv_label_create(TILE);
-    lv_label_set_text(data_type_label, "Temperature, celsius");
+    lv_label_set_text(data_type_label, dataTypeStr.c_str());
     lv_obj_set_style_text_color(data_type_label, lv_color_hex(0x0000000), 0);
     lv_obj_align(data_type_label, LV_ALIGN_TOP_MID, 0, 70);
 
@@ -179,15 +179,19 @@ void populateGraph(std::vector<HistoricData>* data) {
 
     // get abs(max value of data) for height of graph
     float maxData = 0;
+    float minData = 9999;
 
     for(size_t i = 0; i < dataSize; i++) {
         chartData->y_points[i] = data->at(i).data; // add the points
         float absData = abs(data->at(i).data);
         maxData = maxData < absData ? absData : maxData;
+        minData = minData > data->at(i).data ? data->at(i).data : minData;
     }
 
     // round to nearest higher multiple of 5 for better formating of y-axel
     int maxDataCeil5 = 5 * std::ceil(maxData / 5.0);
+
+
 
     lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, -maxDataCeil5, maxDataCeil5);
 

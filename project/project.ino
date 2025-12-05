@@ -134,7 +134,7 @@ static void create_ui() {
 
   // Tile #2
   {
-    historicDataCityLabel = CreateHistoricDataScreen(tileview, t2, defaultStation.name);
+    historicDataCityLabel = CreateHistoricDataScreen(tileview, t2, defaultStation.name, param_to_string(defaultParam));
   }
 
   //Settings Screen.
