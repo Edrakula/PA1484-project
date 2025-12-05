@@ -15,7 +15,9 @@ const char *days[7] = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
 lv_obj_t *temp_label;
 lv_obj_t *card;
 
-lv_obj_t* draw_sunny_ui(lv_obj_t *tile)
+lv_obj_t* dayIcons[7] = {nullptr};
+
+lv_obj_t* draw_sunny_ui(lv_obj_t *tile, std::string name)
 {
     // common text color
     lv_color_t text_color = lv_color_hex(0xFFFFFF);
@@ -59,7 +61,7 @@ lv_obj_t* draw_sunny_ui(lv_obj_t *tile)
 
     // ----- City name -----
     lv_obj_t *city_label = lv_label_create(tile);
-    lv_label_set_text(city_label, "Karlskrona");
+    lv_label_set_text(city_label, name.c_str());
     lv_obj_set_style_text_color(city_label, lv_color_hex(0x0000000), 0);
     lv_obj_align(city_label, LV_ALIGN_TOP_MID, 0, 10);
 
@@ -114,10 +116,12 @@ void update_temperatures(std::vector<ForecastTemp> forecastTemps, lv_obj_t* tile
 
         ForecastTemp curr_temp = forecastTemps[i];
 
-        if (curr_temp.snowProbability > 0.5) get_snow_icon(card, x);
-        else if (curr_temp.rainProbability > 0.5) get_rain_icon(card, x);
-        else if (curr_temp.cloudAreaFraction > 4) get_cloud_icon(card, x);
-        else get_sunny_icon(card, x);
+        if (dayIcons[i] != nullptr) lv_obj_del(dayIcons[i]);
+
+        if (curr_temp.snowProbability > 0.5) dayIcons[i] = get_snow_icon(card, x);
+        else if (curr_temp.rainProbability > 0.5) dayIcons[i] = get_rain_icon(card, x);
+        else if (curr_temp.cloudAreaFraction > 4) dayIcons[i] = get_cloud_icon(card, x);
+        else dayIcons[i] = get_sunny_icon(card, x);
 
 
         std::ostringstream oss;

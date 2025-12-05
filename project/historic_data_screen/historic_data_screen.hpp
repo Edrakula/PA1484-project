@@ -49,11 +49,11 @@ static void chart_event_cb(lv_event_t * e)
 
 
 
-lv_obj_t* CreateHistoricDataScreen(lv_obj_t *TILE_VIEW, lv_obj_t *TILE) {
+lv_obj_t* CreateHistoricDataScreen(lv_obj_t *TILE_VIEW, lv_obj_t *TILE, std::string name) {
     
     // ----- City name -----
     city_label_history = lv_label_create(TILE);
-    lv_label_set_text(city_label_history, "Karlskrona");
+    lv_label_set_text(city_label_history, name.c_str());
     lv_obj_set_style_text_color(city_label_history, lv_color_hex(0x0000000), 0);
     lv_obj_align(city_label_history, LV_ALIGN_TOP_MID, 0, 10);
 

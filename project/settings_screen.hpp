@@ -10,8 +10,56 @@
 #include <LilyGo_AMOLED.h>
 #include <LV_Helper.h>
 #include <lvgl.h>
+#include <Preferences.h>
 
 #include "backend_logic/apiconnections.hpp"
+
+extern Preferences prefs;
+
+extern StationData defaultStation;
+extern HistoricDataParameters defaultParam;
+extern StationData currStation;
+extern HistoricDataParameters currParam;
+
+static lv_obj_t* settingsDefaultCityLabel;
+
+void saveDefaultStation(const StationData& station, const HistoricDataParameters& param){
+    prefs.begin("myapp", false);
+    prefs.putString("name", station.name.c_str());
+    prefs.putString("id", station.id.c_str());
+    prefs.putString("lon", station.longitude.c_str());
+    prefs.putString("lat", station.latitude.c_str());
+    prefs.putUChar("param", static_cast<uint8_t>(defaultParam));
+    prefs.end();
+}
+
+
+bool loadDefaultStation(StationData &station, HistoricDataParameters &param) {
+    prefs.begin("myapp", true);
+
+    station.name = (std::string) prefs.getString("name", "").c_str();
+    station.id = (std::string) prefs.getString("id", "").c_str();
+    station.longitude = (std::string) prefs.getString("lon", "").c_str();
+    station.latitude = (std::string) prefs.getString("lat", "").c_str();
+
+    
+    if (!prefs.isKey("param")) {
+        prefs.end();
+        return false;   // nothing saved yet
+    }
+
+    uint8_t value = prefs.getUChar("param");
+    
+
+    prefs.end();
+
+    param = static_cast<HistoricDataParameters>(value);
+
+    // param = HISTORIC_TEMP;
+
+    return station.name.length() > 0; // or any other validity check
+}
+
 
 
 typedef struct {
@@ -59,6 +107,39 @@ void city_dropdown_event_cb(lv_event_t* event) {
     if (info->updateAllTiles != nullptr) info->updateAllTiles(STATIONS[selected]);
 }
 
+
+
+void setDeafultCityBtnOnClick(lv_event_t* event) {
+    Serial.println("setting default");
+    defaultStation.id = currStation.id;
+    defaultStation.name = currStation.name;
+    defaultStation.longitude = currStation.longitude;
+    defaultStation.latitude = currStation.latitude;
+
+    defaultParam = currParam;
+
+    saveDefaultStation(defaultStation, defaultParam);
+    // saveDefaultParam(defaultParam);
+
+    
+    std::string idk = "Default city,param: " + defaultStation.name + "," + param_to_string(defaultParam);
+
+    lv_label_set_text(settingsDefaultCityLabel, idk.c_str());
+}
+
+
+
+void loadDeafultCityBtnOnClick(lv_event_t* event) {
+    Serial.println("loading default");
+    currStation = defaultStation;
+    currParam = defaultParam;
+
+    city_info_t* info = (city_info_t *) lv_event_get_user_data(event);
+
+    if (info->updateAllTiles != nullptr) info->updateAllTiles(defaultStation);
+}
+
+
 lv_obj_t* create_settings_screen(lv_obj_t* tileview, lv_obj_t* tile, void (*updateAllTiles)(const StationData&), void (*updateHistoricParam)(const HistoricDataParameters&))
 {
     std::string settings_text = "Settings";
@@ -105,6 +186,45 @@ lv_obj_t* create_settings_screen(lv_obj_t* tileview, lv_obj_t* tile, void (*upda
     lv_obj_add_event_cb(cityDropdown, city_dropdown_event_cb, LV_EVENT_VALUE_CHANGED, &info);
     
     lv_obj_align(cityDropdown, LV_ALIGN_CENTER, -200, 0);
+
+
+    settingsDefaultCityLabel = lv_label_create(tile);
+
+    std::string idk = "Default city,param: " + defaultStation.name + "," + param_to_string(defaultParam);
+
+    lv_label_set_text(settingsDefaultCityLabel, idk.c_str());
+
+    lv_obj_t* setDefaultBtn = lv_btn_create(tile);
+    
+    lv_obj_set_size(setDefaultBtn, 150, 50);
+    // lv_obj_center(setDefaultBtn);
+
+    
+
+    lv_obj_add_event_cb(setDefaultBtn, setDeafultCityBtnOnClick, LV_EVENT_PRESSED, NULL);
+
+    lv_obj_t *setDefaultBtnlabel = lv_label_create(setDefaultBtn);
+    lv_label_set_text(setDefaultBtnlabel, "Set Default");
+    lv_obj_center(setDefaultBtnlabel);
+
+    lv_obj_align(settingsDefaultCityLabel, LV_ALIGN_CENTER, 0, 50);
+    lv_obj_align(setDefaultBtn, LV_ALIGN_CENTER, -200, 100);
+
+
+
+    lv_obj_t* loadDefaultBtn = lv_btn_create(tile);
+    
+    lv_obj_set_size(loadDefaultBtn, 150, 50);
+    // lv_obj_center(setDefaultBtn);
+
+    lv_obj_add_event_cb(loadDefaultBtn, loadDeafultCityBtnOnClick, LV_EVENT_PRESSED, &info);
+
+    lv_obj_t *loadDefaultBtnlabel = lv_label_create(loadDefaultBtn);
+    lv_label_set_text(loadDefaultBtnlabel, "load Default");
+    lv_obj_center(loadDefaultBtnlabel);
+
+    lv_obj_align(loadDefaultBtn, LV_ALIGN_CENTER, 200, 100);
+
 
     return cityDropdown;
 

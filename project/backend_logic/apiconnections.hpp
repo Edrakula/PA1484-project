@@ -15,7 +15,7 @@
 #include <ArduinoJson.h>
 #include <LilyGo_AMOLED.h>
 
-#define DEBUG
+// #define DEBUG
 
 const std::string KARLSKRONA_STATION_ID = "65090";
 const std::string KARLSKRONA_LONGITUDE = "15.586710";
@@ -92,20 +92,20 @@ void dezerializeJson(JsonDocument& doc, const std::string& payload, Error& err) 
 
 struct StationData{
 	std::string name;
-	int id;
-	float longitude;
-	float latitude;
+	std::string id;
+	std::string longitude;
+	std::string latitude;
 
-	StationData(std::string name = "", int id = -1, float longitude = 1000, float latitude = 1000) : name(name), id(id), longitude(longitude), latitude(latitude) {};
+	StationData(std::string name = "", std::string id = "-1", std::string longitude = "1000", std::string latitude = "1000") : name(name), id(id), longitude(longitude), latitude(latitude) {};
 };
 
 
 const StationData STATIONS[5] = {
-	StationData("Karlskrona", 65090, 15.589, 56.15),
-	StationData("Stockholm", 97400, 17.9545, 59.6269),
-	StationData("Göteborg", 72420, 	12.2919, 57.6764),
-	StationData("Malmö", 53300, 13.3787, 55.5231),
-	StationData("Kiruna", 180940, 20.3387, 67.827),
+	StationData("Karlskrona", "65090", "15.589", "56.15"),
+	StationData("Stockholm", "97400", "17.9545", "59.6269"),
+	StationData("Göteborg", "72420", 	"12.2919", "57.6764"),
+	StationData("Malmö", "53300", "13.3787", "55.5231"),
+	StationData("Kiruna", "180940", "20.3387", "67.827"),
 };
 
 
@@ -156,6 +156,20 @@ struct HistoricData {
 
 enum HistoricDataParameters { HISTORIC_TEMP = 1, HISTORIC_AIR_PRESSURE = 9, HISTORIC_WIND_SPEED = 4, HISTORIC_HUMIDITY = 6 };
 
+std::string param_to_string(HistoricDataParameters param) {
+	switch (param) {
+	case HISTORIC_TEMP:
+		return "Temperature, celsius";
+	case HISTORIC_AIR_PRESSURE:
+		return "Air Pressure, hectopaskal";
+	case HISTORIC_WIND_SPEED:
+		return "Wind speed, m/s";
+	case HISTORIC_HUMIDITY:
+		return "Humidity, %";
+	}
+	return "";
+}
+
 std::vector<HistoricData> getHistoricDataFromId(std::string id, int parameter, Error& err) {
 	std::string payload =
 	    makeRequest("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/" +
@@ -183,7 +197,7 @@ std::vector<HistoricData> getHistoricDataFromId(std::string id, int parameter, E
 	size_t valuesAmount = values.size();
 
 	for (size_t i = 0; i < valuesAmount; i++) {
-		// if (valuesAmount > 200 && i == 0) i = 11;
+		if (valuesAmount > 200 && i == 0) i = 11;
 		HistoricData data;
 		data.data = values[i]["value"].as<float>();
 		data.unit = parameterUnit;
@@ -194,7 +208,7 @@ std::vector<HistoricData> getHistoricDataFromId(std::string id, int parameter, E
 			data.date = ShortDateParser(values[i]["ref"], err);
 		}
 		out.push_back(data);
-		// if (valuesAmount > 200) i += 23;
+		if (valuesAmount > 200) i += 23;
 	}
 	
 	return out;

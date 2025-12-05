@@ -12,9 +12,16 @@
 #include "boot_screen.hpp"
 #include "historic_data_screen/historic_data_screen.hpp"
 #include "forecast_screen/Bg_sunny.hpp"
-#include "settings_screen.hpp"
 
 #include <Preferences.h>
+Preferences prefs;
+
+static StationData defaultStation;
+static HistoricDataParameters defaultParam;
+static StationData currStation;
+static HistoricDataParameters currParam;
+
+#include "settings_screen.hpp"
 
 static const String VERSION = "1.0";
 
@@ -34,14 +41,17 @@ static lv_obj_t* settingsScreen;
 
 static lv_obj_t* cityDropdown;
 
+static lv_obj_t* historicDataParamLabel;
+
+
 static lv_obj_t* forecastDataCityLabel;
 static lv_obj_t* historicDataCityLabel;
 
-static StationData currStation;
-static HistoricDataParameters currParam;
+
 
 static std::vector<ForecastTemp> forecastTemps;
 static std::vector<HistoricData> historicData;
+
 
 
 static void updateHistoricDataBasedOnNewParam(const HistoricDataParameters& param) {
@@ -72,7 +82,7 @@ static void updateAllTilesBasedOnStation(const StationData& stationData) {
   err = Error();    
   
   Serial.println("getting historic data");
-  historicData = getHistoricDataFromId(stationData.id, HISTORIC_TEMP, err);
+  historicData = getHistoricDataFromId(stationData.id, currParam, err);
   Serial.println("got historic data");
   if (!err) {
     Serial.println(historicData[0].date.ymdhms().c_str());
@@ -119,12 +129,12 @@ static void create_ui() {
 
   // Tile #1
   {
-    forecastDataCityLabel = draw_sunny_ui(t1);
+    forecastDataCityLabel = draw_sunny_ui(t1, defaultStation.name);
   }
 
   // Tile #2
   {
-    historicDataCityLabel = CreateHistoricDataScreen(tileview, t2);
+    historicDataCityLabel = CreateHistoricDataScreen(tileview, t2, defaultStation.name);
   }
 
   //Settings Screen.
@@ -164,17 +174,29 @@ void setup() {
 
   beginLvglHelper(amoled);   // init LVGL for this board
 
+  if (loadDefaultStation(defaultStation, defaultParam)) {
+    Serial.println(("Succesfully loaded saved station: " + defaultStation.name).c_str());
+    Serial.println(("Succesfully loaded saved param: " + param_to_string(defaultParam)).c_str());
+  } else {
+    defaultStation = STATIONS[0];
+    Serial.println(("Failed to load saved station: " + defaultStation.name).c_str());
+    defaultParam = HISTORIC_TEMP;
+    Serial.println(("Failed to load saved param: " + param_to_string(defaultParam)).c_str());
+  }
+
+  currStation = defaultStation;
+  currParam = defaultParam;
+
   create_ui();
   connect_wifi();
 
   if (WiFi.status() == WL_CONNECTED) {
 
-    currStation = STATIONS[0];
-    currParam = HISTORIC_TEMP;
 
+    Serial.println(currStation.name.c_str());
     Error err;
     Serial.println("getting forcastData");
-    forecastTemps = getForecastFromLongAndLat(KARLSKRONA_LONGITUDE, KARLSKRONA_LATITUDE, err);
+    forecastTemps = getForecastFromLongAndLat(currStation.longitude, currStation.latitude, err);
     Serial.println("got forecastData");
     if (!err) {
       update_temperatures(forecastTemps, t1);
@@ -185,21 +207,13 @@ void setup() {
     err = Error();    
     
     Serial.println("getting historic data");
-    historicData = getHistoricDataFromId(KARLSKRONA_STATION_ID, HISTORIC_TEMP, err);
+    historicData = getHistoricDataFromId(currStation.id, currParam, err);
     Serial.println("got historic data");
     if (!err) {
       Serial.println(historicData[0].date.ymdhms().c_str());
       populateGraph(&historicData);
     } else {
       Serial.println(err.msg.c_str());
-    }
-    
-    err = Error(); 
-    // std::vector<StationData> stations = getAllStations(err);
-
-    if (!err){
-      err = Error();
-      // populate_settings_screen_with_cities(cityDropdown, &stations, "Karlskrona Söderstjerna", updateAllTilesBasedOnStation, err);
     }
 
   } else {
