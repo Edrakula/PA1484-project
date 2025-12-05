@@ -96,7 +96,7 @@ lv_obj_t* CreateHistoricDataScreen(lv_obj_t *TILE_VIEW, lv_obj_t *TILE, std::str
         13,    /* number of major ticks */
         5,    /* number of minor ticks between majors */
         true, /* enable label for major ticks */
-        40    /* extra space for drawing labels */
+        50    /* extra space for drawing labels */
     );
         
     lv_chart_set_div_line_count(chart, 7, 0);
@@ -117,7 +117,7 @@ lv_obj_t* CreateHistoricDataScreen(lv_obj_t *TILE_VIEW, lv_obj_t *TILE, std::str
     lv_obj_set_style_border_width(red_chart_dot, 0, 0);
 
     // historic slider
-    historic_slider = create_slider_that_updates_label_based_on_historic_data(TILE, 10, nullptr, slider_data_label, red_chart_dot, 10);
+    historic_slider = create_slider_that_updates_label_based_on_historic_data(TILE, 10, nullptr, slider_data_label, red_chart_dot, 10, 0);
 
     // date labels
     min_date_label = lv_label_create(TILE);
@@ -141,17 +141,20 @@ lv_obj_t* CreateHistoricDataScreen(lv_obj_t *TILE_VIEW, lv_obj_t *TILE, std::str
     return city_label_history;
 }
 
-std::pair<int,int> get_xy_dist_from_center_of_chart_point(int x_index, int y_value, int y_max) {
+std::pair<int,int> get_xy_dist_from_center_of_chart_point(int x_index, int y_value, int y_max, int y_min) {
 
     lv_coord_t left = -CHART_WIDTH/2;
     lv_coord_t top = -CHART_HEIGHT/2;
 
     int point_count = lv_chart_get_point_count(chart);
+    int maxCeil5 = 5 * std::ceil(y_max / 5.0);
+    int minFloor5 = 5 * std::floor(y_min / 5.0);
+    int centerValue = (maxCeil5 + minFloor5) / 2;
     int y_dist = abs(y_value - y_max);
 
     // Map x and y to pixels
     int px = left + x_index * ((float)(CHART_WIDTH-(CHART_PADDING*2)) / (float)(point_count-1));
-    int py = top + y_dist * ((float)(CHART_HEIGHT-(CHART_PADDING*2)) / (float)(y_max*2));
+    int py = top + y_dist * ((float)(CHART_HEIGHT-(CHART_PADDING*2)) / (float)(y_max-y_min));
 
     return {px + CHART_PADDING,py + CHART_PADDING};
 }
@@ -190,25 +193,27 @@ void populateGraph(std::vector<HistoricData>* data) {
 
     // round to nearest higher multiple of 5 for better formating of y-axel
     int maxDataCeil5 = 5 * std::ceil(maxData / 5.0);
+    int minDatafloor5 = 5 * std::floor(minData / 5.0);
 
 
+    int minRange = minData < 10 ? -maxDataCeil5 : minData < 100 ? 0 : minDatafloor5;
 
-    lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, -maxDataCeil5, maxDataCeil5);
+    lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, minRange, maxDataCeil5);
 
     lv_chart_set_axis_tick(chart,
         LV_CHART_AXIS_PRIMARY_Y,
         10, // big ticks 10px wide
         5, // small ticks 5 px wide
-        (maxDataCeil5 * 2) / 5 + 1, // formula (2x/5 + 1) to always have steps of 5 and 1 step on 0
+        minData < 10 ? (maxDataCeil5 * 2) / 5 + 1 : minData < 100 ? maxDataCeil5 / 5 + 1 : (maxDataCeil5 * 2) / 5 + 1 - ((minDatafloor5 * 2) / 5 + 1) , // formula (2x/5 + 1) to always have steps of 5 and 1 step on 0
         5, // 5 small ticks between big ticks
         true, // use lavels
-        40  // extra space for drawing labels
+        50  // extra space for drawing labels
     );
 
-    lv_chart_set_div_line_count(chart, maxDataCeil5 / 5 + 1, 0); // horizontal lines every 10 steps
+    lv_chart_set_div_line_count(chart, minData < 10 ? (maxDataCeil5 * 2) / 5 + 1 : minData < 100 ? maxDataCeil5 / 5 + 1 : (maxDataCeil5 * 2) / 5 + 1 - ((minDatafloor5 * 2) / 5 + 1), 0); // horizontal lines every 10 steps
 
     // -------------- highlight current point --------------
-    std::pair<int,int> cords = get_xy_dist_from_center_of_chart_point(0, data->at(0).data, maxDataCeil5);
+    std::pair<int,int> cords = get_xy_dist_from_center_of_chart_point(0, data->at(0).data, maxDataCeil5, minRange);
 
     lv_obj_center(red_chart_dot);
     lv_obj_align(red_chart_dot, LV_ALIGN_CENTER, cords.first, cords.second);
@@ -216,7 +221,7 @@ void populateGraph(std::vector<HistoricData>* data) {
     lv_chart_refresh(chart);
 
     // -------------- update slider --------------
-    slider_update_slider_range_and_info(historic_slider ,dataSize, slider_data_label, data, red_chart_dot, maxDataCeil5);
+    slider_update_slider_range_and_info(historic_slider ,dataSize, slider_data_label, data, red_chart_dot, maxDataCeil5, minRange);
 }
 
 #endif

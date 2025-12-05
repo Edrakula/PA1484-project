@@ -14,7 +14,7 @@
 
 #include "historic_data_screen.hpp"
 
-extern std::pair<int,int> get_xy_dist_from_center_of_chart_point(int x_index, int y_value, int y_max);
+extern std::pair<int,int> get_xy_dist_from_center_of_chart_point(int x_index, int y_value, int y_max, int y_min);
 
 static void slider_event_cb(lv_event_t * e){
   lv_obj_t* slider = lv_event_get_target(e);
@@ -28,6 +28,7 @@ typedef struct {
     std::vector<HistoricData>* data;
     lv_obj_t* red_dot;
     int max_value;
+    int min_value;
 } slider_info_t;
 
 
@@ -43,7 +44,10 @@ static void slider_event_cb_with_historic_data_and_label(lv_event_t * e)
 
     HistoricData cur_data_point = info->data->at(value);
 
-    std::pair<int,int> cords = get_xy_dist_from_center_of_chart_point(value, cur_data_point.data, info->max_value);
+    Serial.println(info->max_value);
+    Serial.println(info->min_value);
+
+    std::pair<int,int> cords = get_xy_dist_from_center_of_chart_point(value, cur_data_point.data, info->max_value, info->min_value);
 
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(1) << cur_data_point.data;
@@ -66,7 +70,7 @@ lv_obj_t* create_slider(lv_obj_t* tile, int length_of_slider){
   return slider;
 }
 
-lv_obj_t* create_slider_that_updates_label_based_on_historic_data(lv_obj_t* tile, int length_of_slider, std::vector<HistoricData>* data, lv_obj_t* label, lv_obj_t* red_dot, int max_value){ 
+lv_obj_t* create_slider_that_updates_label_based_on_historic_data(lv_obj_t* tile, int length_of_slider, std::vector<HistoricData>* data, lv_obj_t* label, lv_obj_t* red_dot, int max_value, int min_value){ 
   lv_obj_t* slider = lv_slider_create(tile);
   
   lv_obj_align(slider, LV_ALIGN_BOTTOM_MID, 0,-15);
@@ -79,6 +83,7 @@ lv_obj_t* create_slider_that_updates_label_based_on_historic_data(lv_obj_t* tile
   info.data = data;
   info.red_dot = red_dot;
   info.max_value = max_value;
+  info.min_value = min_value;
 
   lv_obj_add_event_cb(slider, slider_event_cb_with_historic_data_and_label, LV_EVENT_VALUE_CHANGED, &info);
   return slider;
@@ -93,12 +98,13 @@ void slider_set_info(lv_obj_t *slider, slider_info_t *new_info) {
   lv_obj_add_event_cb(slider, slider_event_cb_with_historic_data_and_label, LV_EVENT_VALUE_CHANGED, new_info);
 }
 
-void slider_update_slider_range_and_info(lv_obj_t* slider ,int data_size, lv_obj_t* label, std::vector<HistoricData>* data, lv_obj_t* red_dot, int max_value) {
+void slider_update_slider_range_and_info(lv_obj_t* slider ,int data_size, lv_obj_t* label, std::vector<HistoricData>* data, lv_obj_t* red_dot, int max_value, int min_value) {
   static slider_info_t info;
   info.label = label;
   info.data = data;
   info.red_dot = red_dot;
   info.max_value = max_value;
+  info.min_value = min_value;
 
   slider_set_info(slider, &info);
   update_slider_range(slider, data_size - 1);
