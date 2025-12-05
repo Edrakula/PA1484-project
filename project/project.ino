@@ -11,7 +11,7 @@
 #include "backend_logic/apiconnections.hpp"
 #include "boot_screen.hpp"
 #include "historic_data_screen/historic_data_screen.hpp"
-#include "forecast_screen/Bg_sunny.hpp"
+#include "forecast_screen/forecastScreen.hpp"
 
 #include <Preferences.h>
 Preferences prefs;
@@ -129,7 +129,7 @@ static void create_ui() {
 
   // Tile #1
   {
-    forecastDataCityLabel = draw_sunny_ui(t1, defaultStation.name);
+    forecastDataCityLabel = draw_forecast_screen(t1, defaultStation.name);
   }
 
   // Tile #2
