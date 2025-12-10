@@ -1,4 +1,4 @@
-# ESP32-T4-S3-Template
+# PA1484-Project
 
 Welcome to the lab using the ESP32-T4-S3 LilyGO!
 
@@ -6,6 +6,17 @@ This repository serves as a foundation for software engineering projects aimed a
 This document will guide you through the setup process and help you prepare to work with your ESP32 hardware.
 
 ---
+
+
+# Introduction
+
+This part should give a general introduction to your project. Briefly describe your project:
+- What the system does
+- What problem it solves
+- What technologies it uses (ESP32, touchscreen, SMHI API, PlatformIO)
+- What the main functionality is
+
+
 
 # How to get started
 
@@ -126,3 +137,25 @@ From LilyGO [link](https://github.com/Xinyuan-LilyGO/LilyGo-AMOLED-Series)
      - Windows: `C:\Users\{username}\Documents\Arduino`
      - macOS: `/Users/{username}/Documents/Arduino`
      - Linux: `/home/{username}/Arduino`
+
+
+
+# Features
+
+- [x] US1.1C: As a user, I want to see a starting screen to display the current program version and group number on the first screen.
+- [x] US1.3: As a user, I want to have a screen to view weather forecast data.
+- [x] US1.2C: As a user, I want to see the weather forecast for the next 7 days for the selected city on the second screen in terms of temperature and weather conditions with symbols (e.g., clear sky, rain, snow, thunder) per day at 12:00.
+- [x] US2.1: As a user, I want to be able to navigate between different screens (like forecast screen) by sliding a finger over the touch screen. Weather Data Display
+- [x] US3.1: As a user, I want to have a screen to view historical weather data.
+- [x] US3.2D: As a user, on the third screen I want to view the latest months (SMHI API period: latest-months) of historical hourly data for selected weather parameter in the selected city, using a slider to interact with the historical graph by scrolling where a depleted slider corresponds to the oldest datapoint and a full slider corresponds to the latest datapoint.
+- [x] US4.1: As a user, on the fourth screen, I want to access a single settings screen to configure both the city and weather parameter options.
+- [x] US4.2B: As a user, I want to select from four weather parameters, namely temperature (1), humidity (6), wind speed (4), and Air pressure (9), using a dropdown list, to customize the historical graph.
+- [x] US4.3B: As a user, I want to select from five different cities, namely Karlskrona(65090), Stockholm(97400), Göteborg(72420), Malmö(53300), and Kiruna(180940), using a dropdown, to view their weather data for the historical data and starting screen forecast.
+- [x] US4.4: As a user, I want to reset the selected city and weather parameter to default using a button.
+- [x] US4.5: As a user, I want to set my default city and weather parameter to the current selection using a button, so they are automatically selected when I start the device.
+- [x] US4.6: As a user, I want the device to store my default city and weather parameter so that they are retained even after a restart.
+## Extended Forecast & Visualization
+- [ ] US5.1: As a user, I want to access a screen to view the weather forecast for all of Sweden.
+- [ ] US5.2: As a user, I want to see the temperature forecast for each administrative area of Sweden (“Landskap”) on a map, with:
+   - [ ] A Color-coded temperature zone per each administrative area, using the center of each area to access the forecast.
+   - [ ] A looped animation displaying the hourly forecast for the next 24 hours.
