@@ -56,6 +56,11 @@ static std::vector<HistoricData> historicData;
 
 static void updateHistoricDataBasedOnNewParam(const HistoricDataParameters& param) {
   currParam = param;
+
+  std::string paramStrVer = param_to_string(param);
+
+  lv_label_set_text(historicDataParamLabel, paramStrVer.c_str());
+
   Serial.println("getting historic data");
   Error err;
   historicData = getHistoricDataFromId(currStation.id, param, err);
@@ -134,7 +139,7 @@ static void create_ui() {
 
   // Tile #2
   {
-    historicDataCityLabel = CreateHistoricDataScreen(tileview, t2, defaultStation.name, param_to_string(defaultParam));
+    historicDataCityLabel = CreateHistoricDataScreen(tileview, t2, defaultStation.name, param_to_string(defaultParam), historicDataParamLabel);
   }
 
   //Settings Screen.

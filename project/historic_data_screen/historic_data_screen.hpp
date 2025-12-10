@@ -49,7 +49,7 @@ static void chart_event_cb(lv_event_t * e)
 
 
 
-lv_obj_t* CreateHistoricDataScreen(lv_obj_t *TILE_VIEW, lv_obj_t *TILE, std::string name, std::string dataTypeStr) {
+lv_obj_t* CreateHistoricDataScreen(lv_obj_t *TILE_VIEW, lv_obj_t *TILE, std::string name, std::string dataTypeStr, lv_obj_t* &historicDataParamLabel) {
     
     // ----- City name -----
     city_label_history = lv_label_create(TILE);
@@ -65,6 +65,7 @@ lv_obj_t* CreateHistoricDataScreen(lv_obj_t *TILE_VIEW, lv_obj_t *TILE, std::str
 
     // what data is displayed label
     data_type_label = lv_label_create(TILE);
+    historicDataParamLabel = data_type_label;
     lv_label_set_text(data_type_label, dataTypeStr.c_str());
     lv_obj_set_style_text_color(data_type_label, lv_color_hex(0x0000000), 0);
     lv_obj_align(data_type_label, LV_ALIGN_TOP_MID, 0, 70);

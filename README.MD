@@ -1,21 +1,11 @@
 # PA1484-Project
 
-Welcome to the lab using the ESP32-T4-S3 LilyGO!
-
-This repository serves as a foundation for software engineering projects aimed at the ESP32 hardware.
-This document will guide you through the setup process and help you prepare to work with your ESP32 hardware.
-
 ---
 
 
 # Introduction
 
-This part should give a general introduction to your project. Briefly describe your project:
-- What the system does
-- What problem it solves
-- What technologies it uses (ESP32, touchscreen, SMHI API, PlatformIO)
-- What the main functionality is
-
+This project is a weathter app for embeded use on a ESP32 microcontroller, more specifically the ESP32-T4-S3 LilyGO. It's purpose is to show the weather in 5 different cities for the next 7 days, and show historical weather data for thoses cities.
 
 
 # How to get started
@@ -75,8 +65,6 @@ The ESP32-T4-S3 LilyGO has a built-in WiFi module, which allows you to connect t
 However, it does not work with eduroam, so you will need to connect to a different WiFi network.
 To connect to WiFi, you need to provide your SSID and password in the [project/project.ino](./project/project.ino) file.
 
-
----
 
 ---
 

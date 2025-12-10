@@ -11,9 +11,17 @@
 #include "small_icons/snow_icon.hpp"
 #include "small_icons/cloud_icon.hpp"
 #include "small_icons/rain_icon.hpp"
+#include "small_icons/sleet_icon.hpp"
+#include "small_icons/thunder_icon.hpp"
+#include "small_icons/wind_icon.hpp"
+
 #include "forecast_screen/Bg_sunny.hpp"
 #include "forecast_screen/Bg_cloudy.hpp"
 #include "forecast_screen/Bg_rainy.hpp"
+#include "forecast_screen/Bg_thunder.hpp"
+#include "forecast_screen/Bg_sleet.hpp"
+#include "forecast_screen/Bg_snow.hpp"
+#include "forecast_screen/Bg_wind.hpp"
 #include <algorithm>
 
 lv_obj_t *temperatures[7];
@@ -110,12 +118,40 @@ void update_temperatures(std::vector<ForecastTemp> forecastTemps, lv_obj_t* tile
 
     int x = 22;
 
-    // bg_obj = draw_rainy_ui(tile, cond_label);
+    if (bg_obj != nullptr) lv_obj_del(bg_obj);
 
-    if (forecastTemps[0].rainProbability > 0.7) bg_obj = draw_rainy_ui(tile, cond_label);
-    else if (forecastTemps[0].cloudAreaFraction > 4) bg_obj = draw_cloudy_ui(tile, cond_label);
-    else bg_obj = draw_sunny_ui(tile, cond_label);
+    
+    // SNOW
+    if (forecastTemps[0].snowProbability > 0.7f) {  // since snowProbability is fraction
+        bg_obj = draw_snow_ui(tile, cond_label);
+    }
+    // SLEET
+    else if (forecastTemps[0].rainProbability > 50 &&
+             forecastTemps[0].snowProbability > 0.5f) {
+        bg_obj = draw_sleet_ui(tile, cond_label);
+    }
+    // THUNDER
+    else if (forecastTemps[0].thunderProbability > 0.4f) {
+        bg_obj = draw_thunder_ui(tile, cond_label);
+    }
+    // RAIN
+    else if (forecastTemps[0].rainProbability > 50) {
+        bg_obj = draw_rainy_ui(tile, cond_label);
+    }
+    // CLOUDY
+    else if (forecastTemps[0].cloudAreaFraction > 4) {
+        bg_obj = draw_cloudy_ui(tile, cond_label);
+    }
+    // WINDY
+    else if (forecastTemps[0].windSpeed > 10.0f) {          // example condition
+        bg_obj = create_windy_bg(tile, cond_label);
+    }
+    // DEFAULT → SUNNY
+    else {
+        bg_obj = draw_sunny_ui(tile, cond_label);
+    }
 
+    
 
     for (int i = 0; i < y; i++) {
         lv_obj_t *t = temperatures[i];
@@ -124,11 +160,35 @@ void update_temperatures(std::vector<ForecastTemp> forecastTemps, lv_obj_t* tile
 
         if (dayIcons[i] != nullptr) lv_obj_del(dayIcons[i]);
 
-        if (curr_temp.snowProbability > 0.5) dayIcons[i] = get_snow_icon(card, x);
-        else if (curr_temp.rainProbability > 0.7) dayIcons[i] = get_rain_icon(card, x);
-        else if (curr_temp.cloudAreaFraction > 4) dayIcons[i] = get_cloud_icon(card, x);
-        else dayIcons[i] = get_sunny_icon(card, x);
-
+        // SNOW
+        if (forecastTemps[i].snowProbability > 0.7f) {
+            dayIcons[i] = get_snow_icon(card, x);
+        }
+        // SLEET
+        else if (forecastTemps[i].rainProbability > 50 &&
+                 forecastTemps[i].snowProbability > 0.5f) {
+            dayIcons[i] = get_sleet_icon(card, x);
+        }
+        // THUNDER
+        else if (forecastTemps[i].thunderProbability > 0.4f) {
+            dayIcons[i] = get_thunder_icon(card, x);
+        }
+        // RAIN
+        else if (forecastTemps[i].rainProbability > 50) {
+            dayIcons[i] = get_rain_icon(card, x);
+        }
+        // CLOUDY
+        else if (forecastTemps[i].cloudAreaFraction > 4) {
+            dayIcons[i] = get_cloud_icon(card, x);
+        }
+        // WINDY
+        else if (forecastTemps[i].windSpeed > 10.0f) {          
+            dayIcons[i] = get_wind_icon(card, x);
+        }
+        // DEFAULT → SUNNY
+        else {
+            dayIcons[i] = get_sunny_icon(card, x);
+        }
 
         std::ostringstream oss;
         oss << std::fixed << std::setprecision(1) << forecastTemps[i].temp;
